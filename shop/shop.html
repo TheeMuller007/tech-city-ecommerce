@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Shop premium laptops, smartphones, and tech accessories at TECH CITY">
+    <title>Shop - TECH CITY</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/shop.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+    <style>
+    <body>
+    @media (max-width: 767px) {
+        .nav.active {
+            display: flex;
+            flex-direction: column;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--background);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem;
+            box-shadow: var(--shadow-lg);
+        }
+    }
+
+    .search-bar {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    .search-input {
+        width: 16rem;
+        padding: 0.5rem 1rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        font-size: 0.875rem;
+        font-family: var(--font-sans);
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--primary);
+    }
+
+    @keyframes fadeOut {
+        from {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        to {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+    }
+
+
+
+    /* Navbar LOG IN AND REGISTER Button Styles */
+    .nav-button {
+        background-color: #007BFF;
+        /* Bright blue for button */
+        color: white;
+        /* Button text color */
+        padding: 6px 10px;
+        /* Smaller padding for a more compact size */
+        border: none;
+        /* No border */
+        border-radius: 4px;
+        /* Slightly rounded corners */
+        text-decoration: none;
+        /* No underline */
+        font-weight: 500;
+        /* Normal to slightly bold text */
+        margin-right: 10px;
+        /* Space between buttons and nav links */
+        margin-left: auto;
+        /* Push buttons to the right */
+        transition: background-color 0.3s, transform 0.2s;
+        /* Transition effects */
+        font-size: 0.85rem;
+        /* Smaller font size for a more compact button */
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        /* Reduced shadow for less prominence */
+    }
+
+    .nav-button:hover {
+        background-color: #0056b3;
+        /* Darker blue on hover */
+        transform: scale(1.05);
+        /* Slightly enlarge on hover */
+    }
+
+    /* Ensure the navbar is a flex container */
+    .nav {
+        display: flex;
+        /* Make the navbar a flex container */
+        align-items: center;
+        /* Align items vertically */
+    }
+
+
+
+    
+
+
+
+
+
+
+/* Bottom-right icons (clean flat look) */
+.product-action-icons-corner {
+    position: absolute;
+    bottom: 20px;
+    right: 12px;
+    display: flex;
+    gap: 10px;
+    z-index: 15;
+    opacity: 1;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Hide icons when hovering product image */
+.product-image-wrapper:hover ~ .product-action-icons-corner {
+    opacity: 0;
+    transform: translateY(5px);
+}
+
+/* Keep visible when hovering icons */
+.product-action-icons-corner:hover {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* FLAT ICON STYLE (no circle, no border) */
+.product-action-icons-corner span {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: auto;
+    height: auto;
+
+    background: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+
+    font-size: 18px;
+    color: #000; /* black icons */
+    opacity: 0.85;
+
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.product-action-icons-corner span:last-child:hover svg {
+    stroke: #1a73e8;
+}
+
+
+
+
+
+
+/* Subtle hover effect */
+.product-action-icons-corner span:hover {
+    transform: scale(1.15);
+    opacity: 1;
+}
+
+
+
+
+</style>
+
+<body>
+
+<!-- Header -->
+<header class="header">
+    <div class="container">
+        <div class="header-content">
+            <a href="index.html" class="logo">
+                <img src="images/shop/techcity1.jpg" alt="Logo" width="24" height="24" class="logo-icon">
+                <!--<span class="logo-text">TECH CITY</span>-->
+            </a>
+
+            <nav class="nav" id="mainNav">
+                <a href="file:///C:/Users/Clyde%20T.M/Desktop/TECHCITY/public/index.html"
+                    class="nav-link active">Home</a>
+                <a href="file:///C:/Users/Clyde%20T.M/Desktop/TECHCITY/public/shop/shop.html" class="nav-link">Shop</a>
+                <a href="file:///C:/Users/Clyde%20T.M/Desktop/TECHCITY/public/about/about.html"
+                    class="nav-link">About</a>
+                <a href="file:///C:/Users/Clyde%20T.M/Desktop/TECHCITY/public/contact/contact.html"
+                    class="nav-link">Contact</a>
+            </nav>
+
+            <div class="header-actions">
+                <a href="file:///C:/Users/Clyde%20T.M/Desktop/TECHCITY/public/login/index.html"
+                    class="nav-button">Login</a>
+                <a href="file:///C:/Users/Clyde%20T.M/Desktop/TECHCITY/public/register/index.html"
+                    class="nav-button">Register</a>
+
+                <button class="icon-btn" id="searchBtn" aria-label="Search">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                </button>
+
+                <button class="icon-btn" id="cartBtn" aria-label="Shopping cart">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                    <span class="cart-badge" id="cartCount">0</span>
+                </button>
+
+                <button class="icon-btn mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Main Content -->
+<div class="shop-layout">
+    <div class="container">
+        <div class="shop-content-wrapper">
+            <!-- Sidebar -->
+            <aside class="shop-sidebar">
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">Categories</h3>
+                    <div class="filter-list">
+                        <label class="filter-item">
+                            <a href="file:///C:/Users/Clyde%20T.M/Desktop/TECHCITY/public/shop/shop.html"
+                                data-category="all" onclick="filterProducts('all'); return false;">
+                                All Products
+                            </a>
+                        </label>
+                        <label class="filter-item">
+                            <a href="file:///C:/Users/Clyde%20T.M/Desktop/TECHCITY/public/Laptops/index.html"
+                                data-category="laptops" onclick="filterProducts('laptops'); return false;">
+                                Laptops
+                            </a>
+                        </label>
+                        <label class="filter-item">
+                            <a href="file:///C:/Users/Clyde%20T.M/Desktop/TECHCITY/public/smartphones/index.html"
+                                data-category="smartphones" onclick="filterProducts('smartphones'); return false;">
+                                Smartphones
+                            </a>
+                        </label>
+                        <label class="filter-item">
+                            <a href="file:///C:/Users/Clyde%20T.M/Desktop/TECHCITY/public/accessories/index.html"
+                                data-category="accessories" onclick="filterProducts('accessories'); return false;">
+                                Accessories
+                            </a>
+                        </label>
+                        <label class="filter-item">
+                            <a href="file:///C:/Users/Clyde%20T.M/Desktop/TECHCITY/public/printers/index.html"
+                                data-category="bags" onclick="filterProducts('bags'); return false;">
+                                Printers
+                            </a>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+    <h3 class="sidebar-title">Price Range</h3>
+    <div class="price-range">
+        <!-- Start slider at 0 instead of 1500 -->
+        <input type="range" id="priceRange" min="0" max="1500" value="0" step="10">
+        <div class="price-display">
+            <span id="minPrice">$0</span>   <!-- Left side: updates dynamically -->
+            <span id="maxPrice">$1500</span> <!-- Right side: fixed maximum price -->
+        </div>
+    </div>
+</div>
+
+
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">Brands</h3>
+                    <div class="filter-list">
+                        <label class="filter-item">
+                            <a href="#" data-brand="dell" onclick="filterBrands('dell'); return false;">
+                                ORAIMO
+                            </a>
+                        </label>
+                        <label class="filter-item">
+                            <a href="#" data-brand="hp" onclick="filterBrands('hp'); return false;">
+                                SAMSUNG
+                            </a>
+                        </label>
+                        <label class="filter-item">
+                            <a href="#" data-brand="lenovo" onclick="filterBrands('lenovo'); return false;">
+                                LOGITECH
+                            </a>
+                        </label>
+                        <label class="filter-item">
+                            <a href="#" data-brand="samsung" onclick="filterBrands('samsung'); return false;">
+                                ITEL
+                            </a>
+                        </label>
+                    </div>
+                </div>
+
+
+
+                <button class="btn btn-secondary btn-full" id="clearFilters">Clear Filters</button>
+            </aside>
+
+            <!-- Products -->
+            <main class="shop-main">
+                <div class="shop-header">
+                    <!--
+                        <h1>ACCESSORIES</h1>
+
+                        <div class="shop-controls">
+
+                        <div class="search-wrapper">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="m21 21-4.35-4.35"></path>
+                                </svg>
+                                <input type="search" placeholder="Search products..." id="shopSearchInput">
+                           
+                            <select id="sortBy" class="select-input">
+                                <option value="featured">Featured</option>
+                                <option value="price-low">Price: Low to High</option>
+                                <option value="price-high">Price: High to Low</option>
+                                <option value="name">Name: A to Z</option>
+                                <option value="rating">Rating: High to Low</option>
+                            </select>
+                        </div>
+                    </div> </div>-->
+
+                <!--PRODUCTS CARDS-->
+                    <div class="product-grid" id="allProducts">
+                  
+                        <!-- Add more products as needed -->
+                    </div>
+                    <!-- Pagination -->
+                    <div class="pagination">
+                        <button class="btn btn-secondary" data-page="prev">Previous</button>
+                        <button class="btn btn-primary" data-page="1">1</button>
+                        <button class="btn btn-secondary" data-page="2">2</button>
+                        <button class="btn btn-secondary" data-page="3">3</button>
+                        <button class="btn btn-secondary" data-page="next">Next</button>
+                    </div>
+            </main>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- QUICKVIEW MODAL SECTION -->
+<div id="quickViewModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeQuickView()">×</span>
+        <h2 id="modalProductName"></h2>
+        <img id="modalProductImage" src="" alt="" />
+        <div id="modalProductDetails"></div>
+        <button class="btn btn-primary" onclick="addToCart(modalProductId)">Add to Cart</button>
+    </div>
+</div>
+
+<!-- Chatbot Button -->
+<a href="javascript:void(0);" class="chatbot-button" id="chatbotButton" aria-label="Chat with our chatbot">
+    <i class="fas fa-robot"></i> <!-- Robot icon -->
+</a>
+
+
+<!-- Chatbox Section -->
+<div class="chatbox" id="chatbox">
+
+    <!-- Chat Header -->
+    <div class="chatbox-header">
+
+        <!-- Profile & Title -->
+        <div class="chatbox-header-main">
+            <img src="images/techcity.jpg" alt="Chat Icon" class="chat-icon" />
+        </div>
+
+<!-- Header Actions -->
+<div class="chatbox-header-actions" style="position: relative;">
+    <button class="header-btn" title="Search">🔍</button>
+    <button id="optionsBtn" class="header-btn" title="More options">⋮</button>
+    
+    <!-- Options Menu -->
+    <div id="optionsMenu" style="
+        display: none;
+        position: absolute;
+        top: 36px;
+        right: 0;
+        background: #fff;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        min-width: 140px;
+        z-index: 1000;
+    ">
+        <div class="option-item" data-action="clear-chat" style="padding:10px; cursor:pointer; border-bottom:1px solid #eee;">
+            🧹 Clear Chat
+        </div>
+        <div class="option-item" data-action="other-action" style="padding:10px; cursor:pointer;">
+            ⚙ Other Option
+        </div>
+    </div>
+
+    <!-- Dark/Light Mode Toggle -->
+    <button id="toggleDarkMode" class="header-btn" title="Toggle Dark Mode">🌙</button>
+    <!-- Close Chat -->
+    <button id="closeChat" class="header-btn close-chat" title="Close Chat" aria-label="Close chat">✕</button>
+</div>
+
+
+    </div>
+
+
+    <!-- Chat Body -->
+    <div class="chatbox-body" id="chatboxBody">
+
+        <!-- Date Separator -->
+        <div class="chat-date">Today</div>
+
+        <!-- Example Bot Message -->
+        <div class="bot-message">
+            <p>Hello 👋 How can we help you today?</p>
+            <span class="message-time">12:01 PM</span>
+        </div>
+
+        <!-- Typing Indicator -->
+        <div class="typing-indicator" id="typingIndicator">
+            <span></span><span></span><span></span>
+        </div>
+    </div>
+
+    <!-- Quick Replies -->
+    <div class="quick-replies">
+        <button class="quick-reply">🛒 Products</button>
+        <button class="quick-reply">💳 Payments</button>
+        <button class="quick-reply">🚚 Delivery</button>
+        <button class="quick-reply">📞 Talk to agent</button>
+    </div>
+
+<div class="chatbox-footer">
+    <!-- Footer Actions Wrapper -->
+    <div class="footer-actions">
+        <!-- Toggle + Button -->
+        <button class="footer-btn toggle-actions" title="More">+</button>
+
+        <!-- Hidden Action Group -->
+        <div class="action-group">
+            <button class="footer-btn" title="Emoji">😊</button>
+            <button class="footer-btn" title="Attach file">📎</button>
+            <button class="footer-btn" title="Voice message">🎤</button>
+        </div>
+    </div>
+
+    <!-- Input -->
+    <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off" />
+
+    <!-- Send -->
+    <button id="sendButton" aria-label="Send message">➤</button>
+</div>
+
+
+
+    <!-- Read Receipt / Status-->
+
+    <div class="chatbox-status">
+        <!--   <span id="chatStatus">Seen ✓✓</span>-->
+    </div>
+
+</div>
+
+<div id="waveform" class="waveform hidden">
+  <span></span><span></span><span></span><span></span><span></span>
+</div>
+
+
+
+<!-- WhatsApp Button -->
+<a href="https://wa.me/263783187312" class="whatsapp-button" target="_blank" aria-label="Chat with us on WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+</a>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <div class="header-content">
+                    <a href="index.html" class="logo">
+                        <img src="images/shop/techcity1.jpg" alt="Logo" width="50" height="50" class="logo-icon">
+                        <!-- Adjusted logo size -->
+                    </a>
+                </div>
+                <p class="footer-description">Your trusted destination for premium tech products and accessories.</p>
+
+                <div class="footer-section social-icons">
+                    <h4>Follow Us</h4>
+                    <ul>
+                        <li><a href="https://facebook.com" target="_blank"><i class="fab fa-facebook-f"></i></a></li>
+                        <li><a href="https://instagram.com" target="_blank"><i class="fab fa-instagram"></i></a></li>
+                        <li><a href="https://twitter.com" target="_blank"><i class="fab fa-twitter"></i></a></li>
+                    </ul>
+                </div>
+            </div>
+
+
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul class="footer-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="shop.html">Shop</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>Categories</h4>
+                <ul class="footer-links">
+                    <li><a href="shop.html?category=laptops">Laptops</a></li>
+                    <li><a href="shop.html?category=smartphones">Smartphones</a></li>
+                    <li><a href="shop.html?category=accessories">Accessories</a></li>
+                    <li><a href="shop.html?category=bags">Bags & Satchels</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <ul class="footer-links">
+                    <li>Email: info@techcity.com</li>
+                    <li>Phone: +263......</li>
+                    <li>Address: 63 Speke Ave, Harare, Zimbabwe</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2025 TECH CITY. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+
+<!-- Shopping Cart Drawer -->
+<div id="cartDrawer" class="cart-drawer">
+    <div class="cart-backdrop"></div>
+    <div class="cart-content">
+        <div class="cart-header">
+            <h2>Shopping Cart</h2>
+            <button class="icon-btn" id="closeCartBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="cart-items" id="cartItems"></div>
+        <div class="cart-footer" id="cartFooter"></div>
+    </div>
+</div>
+<script src="scripts/bot.js"></script>
+        
+<script>
+const products = [
+    {
+        id: '1',
+        name: 'HP OMEN 16',
+        price: 1299.99,
+        image: 'images/shop/Omen 16.jpg',
+        rating: 4,
+        category: 'laptops',
+        badge: 'Featured',
+        specs: [
+            "16-inch display",
+            "Intel Core i7",
+            "16GB RAM",
+            "512GB SSD",
+            "NVIDIA GeForce RTX"
+        ]
+    },
+    {
+        id: '2',
+        name: 'SAMSUNG S25',
+        price: 999.99,
+        image: 'images/shop/s25.jpg',
+        rating: 5,
+        category: 'smartphones',
+        specs: [
+            "6.7-inch AMOLED",
+            "5G support",
+            "128GB storage",
+            "Triple camera",
+            "Fast charging"
+        ]
+    },
+    {
+        id: '3',
+        name: 'All IN 1 MONITOR',
+        price: 450.99,
+        image: 'images/shop/All in 1 hp.png',
+        rating: 3,
+        category: 'accessories',
+        specs: [
+            "24-inch display",
+            "Full HD",
+            "Built-in speakers",
+            "HDMI support"
+        ]
+    },
+    {
+        id: '4',
+        name: 'Gaming CPU',
+        price: 350.99,
+        image: 'images/shop/cpu.jpg',
+        rating: 4,
+        category: 'accessories',
+        specs: [
+            "Intel / AMD processor",
+            "RGB cooling",
+            "High performance",
+            "Gaming ready"
+        ]
+    },
+    {
+        id: '5',
+        name: 'Wireless Headphones',
+        price: 60.99,
+        image: 'images/shop/headset.jpg',
+        rating: 3,
+        category: 'accessories',
+        specs: [
+            "Bluetooth",
+            "Noise reduction",
+            "Built-in mic",
+            "Long battery life"
+        ]
+    },
+    {
+        id: '6',
+        name: 'Tech Bag',
+        price: 15.00,
+        image: 'images/shop/hpbag.webp',
+        rating: 4,
+        category: 'bags',
+        specs: [
+            "Water resistant",
+            "Laptop compartment",
+            "Lightweight",
+            "Durable material"
+        ]
+    },
+    {
+        id: '7',
+        name: 'Tecno Camon 40',
+        price: 400.00,
+        image: 'images/shop/camon40.jpg',
+        rating: 5,
+        category: 'smartphones',
+        specs: [
+            "High-resolution camera",
+            "Large display",
+            "128GB storage",
+            "Fast charging"
+        ]
+    },
+    {
+        id: '8',
+        name: 'Infinix Note 50 Pro',
+        price: 299.99,
+        image: 'images/shop/infinix50.jpg',
+        rating: 5,
+        category: 'smartphones',
+        specs: [
+            "6.8-inch screen",
+            "8GB RAM",
+            "256GB storage",
+            "5000mAh battery"
+        ]
+    },
+    {
+        id: '9',
+        name: 'F11 2.0 MICROPHONE',
+        price: 15.00,
+        image: 'images/shop/f11.webp',
+        rating: 5,
+        category: 'accessories',
+        specs: [
+            "Plug and play",
+            "Clear audio",
+            "USB connection"
+        ]
+    },
+    {
+        id: '10',
+        name: 'FIRE HD KIDS TAB',
+        price: 144.99,
+        image: 'images/shop/kids tab.avif',
+        rating: 5,
+        category: 'smartphones',
+        specs: [
+            "Kids friendly",
+            "Parental controls",
+            "Durable case",
+            "Educational apps"
+        ]
+    },
+    {
+        id: '11',
+        name: 'X3 SMART CONTROLLER',
+        price: 40.00,
+        image: 'images/shop/x3 2.webp',
+        rating: 3,
+        category: 'accessories',
+        specs: [
+            "Wireless",
+            "Mobile compatible",
+            "Ergonomic design"
+        ]
+    },
+    {
+        id: '12',
+        name: 'COOLER PAD',
+        price: 145.00,
+        image: 'images/shop/cooler pad.avif',
+        rating: 5,
+        category: 'accessories',
+        specs: [
+            "USB powered",
+            "Silent fans",
+            "Improves cooling"
+        ]
+    },
+    {
+        id: '13',
+        name: '4K PROJECTOR',
+        price: 145.00,
+        image: 'images/shop/projector2.jpg',
+        rating: 5,
+        category: 'accessories',
+        specs: [
+            "4K support",
+            "HDMI input",
+            "Portable",
+            "High brightness"
+        ]
+    },
+    {
+        id: '14',
+        name: 'MINI SMART BAG',
+        price: 10.00,
+        image: 'images/shop/mini bag.jpg',
+        rating: 5,
+        category: 'bags',
+        specs: [
+            "Compact design",
+            "Water resistant",
+            "Lightweight"
+        ]
+    },
+    {
+        id: '15',
+        name: 'TP LINK MIFI',
+        price: 45.00,
+        image: 'images/shop/mifi 2.jpg',
+        rating: 5,
+        category: 'accessories',
+        specs: [
+            "4G LTE",
+            "Portable Wi-Fi",
+            "Long battery life"
+    ]
+  }
+];
+
+
+
+
+    // Render star rating
+    function renderStars(rating) {
+        let stars = '';
+        for (let i = 1; i <= 5; i++) {
+            stars += `<span class="${i <= rating ? 'star-filled' : 'star-empty'}">★</span>`;
+        }
+        return stars;
+    }
+
+    // Create product card
+    function createProductCard(product) {
+        return `
+        <div class="product-card fade-in">
+            ${product.badge ? `<div class="product-badge">${product.badge}</div>` : ''}
+            <button class="wishlist-btn" data-id="${product.id}" onclick="toggleWishlist('${product.id}')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+            </button>
+            <div class="product-image-wrapper">
+                <img src="${product.image}" alt="${product.name}" class="product-image">
+            </div>
+            <h3 class="product-title">${product.name}</h3>
+            <div class="product-rating">${renderStars(product.rating)}</div>
+            <div class="product-price">$${product.price.toFixed(2)}</div>
+            <button class="btn btn-primary btn-full" onclick="addToCart('${product.id}')">Add to Cart</button>
+        </div>
+    `;
+    }
+
+    // Toggle wishlist
+    function toggleWishlist(productId) {
+        const btn = document.querySelector(`.wishlist-btn[data-id="${productId}"]`);
+        btn.classList.toggle('active');
+        console.log('Wishlist toggled for product:', productId);
+    }
+
+    // Get products by category
+    function getProductsByCategory(category) {
+        if (!category || category === 'all') {
+            return products;
+        }
+        return products.filter(p => p.category === category);
+    }
+
+    // Load featured products on home page
+    if (document.getElementById('featuredProducts')) {
+        const featuredProducts = products.slice(0, 4);
+        document.getElementById('featuredProducts').innerHTML = featuredProducts
+            .map(product => createProductCard(product))
+            .join('');
+    }
+
+    // Load all products on shop page
+    if (document.getElementById('allProducts')) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const category = urlParams.get('category');
+        const displayProducts = getProductsByCategory(category);
+
+        document.getElementById('allProducts').innerHTML = displayProducts
+            .map(product => createProductCard(product))
+            .join('');
+    }
+
+
+
+
+
+
+    /*MAIN SCRIPT*/
+    // Main JavaScript
+
+    // Mobile menu toggle
+    document.getElementById('mobileMenuBtn')?.addEventListener('click', function () {
+        const nav = document.getElementById('mainNav');
+        nav.classList.toggle('active');
+    });
+
+    // Cart drawer
+    document.getElementById('cartBtn')?.addEventListener('click', openCart);
+    document.getElementById('closeCartBtn')?.addEventListener('click', closeCart);
+    document.querySelector('.cart-backdrop')?.addEventListener('click', closeCart);
+
+    // Search functionality
+    let searchOpen = false;
+    document.getElementById('searchBtn')?.addEventListener('click', function () {
+        searchOpen = !searchOpen;
+        if (searchOpen) {
+            const searchBar = document.createElement('div');
+            searchBar.className = 'search-bar';
+            searchBar.innerHTML = `
+            <input type="search" placeholder="Search products..." class="search-input" id="searchInput" autofocus>
+            <button class="icon-btn" onclick="closeSearch()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        `;
+            this.parentElement.insertBefore(searchBar, this);
+            this.style.display = 'none';
+        }
+    });
+
+    function closeSearch() {
+        const searchBar = document.querySelector('.search-bar');
+        if (searchBar) {
+            searchBar.remove();
+            document.getElementById('searchBtn').style.display = 'flex';
+            searchOpen = false;
+        }
+    }
+
+    // Set active nav link
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === currentPage) {
+            link.classList.add('active');
+        }
+    });
+
+    // Add CSS for mobile menu
+    const style = document.createElement('style');
+    style.textContent = `
+  
+`;
+    document.head.appendChild(style);
+
+
+    /*CART SCRIPT*/
+    // Shopping Cart Management
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+    // Update cart count
+    function updateCartCount() {
+        const cartCount = document.getElementById('cartCount');
+        if (cartCount) {
+            cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+        }
+    }
+
+    // Add to cart
+    function addToCart(productId) {
+        const product = products.find(p => p.id === productId);
+        if (!product) return;
+
+        const existingItem = cart.find(item => item.id === productId);
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            cart.push({
+                id: product.id,
+                name: product.name,
+                price: product.price,
+                image: product.image,
+                quantity: 1
+            });
+        }
+
+        localStorage.setItem('cart', JSON.stringify(cart));
+        updateCartCount();
+        showNotification('Product added to cart!');
+    }
+
+    // Remove from cart
+    function removeFromCart(productId) {
+        cart = cart.filter(item => item.id !== productId);
+        localStorage.setItem('cart', JSON.stringify(cart));
+        updateCartCount();
+        renderCart();
+    }
+
+    // Update quantity
+    function updateQuantity(productId, change) {
+        const item = cart.find(item => item.id === productId);
+        if (item) {
+            item.quantity = Math.max(1, item.quantity + change);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            renderCart();
+        }
+    }
+
+    // Render cart
+    function renderCart() {
+        const cartItems = document.getElementById('cartItems');
+        const cartFooter = document.getElementById('cartFooter');
+
+        if (!cartItems) return;
+
+        if (cart.length === 0) {
+            cartItems.innerHTML = `
+            <div class="cart-empty">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="9" cy="21" r="1"></circle>
+                    <circle cx="20" cy="21" r="1"></circle>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+                <p style="font-weight: 500; margin-bottom: 0.5rem;">Your cart is empty</p>
+                <p style="font-size: 0.875rem;">Add some products to get started</p>
+                <button class="btn btn-primary" onclick="closeCart()" style="margin-top: 1rem;">Continue Shopping</button>
+            </div>
+        `;
+            cartFooter.innerHTML = '';
+            return;
+        }
+
+        cartItems.innerHTML = cart.map(item => `
+        <div class="cart-item">
+            <div class="cart-item-content">
+                <img src="${item.image}" alt="${item.name}" class="cart-item-image">
+                <div class="cart-item-details">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <h3 class="cart-item-name">${item.name}</h3>
+                        <button class="icon-btn" onclick="removeFromCart('${item.id}')" style="width: 1.5rem; height: 1.5rem; margin-top: -0.25rem;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="cart-item-price">$${(item.price * item.quantity).toFixed(2)}</p>
+                    <div class="cart-item-quantity">
+                        <button class="qty-btn" onclick="updateQuantity('${item.id}', -1)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                        </button>
+                        <span style="width: 2rem; text-align: center;">${item.quantity}</span>
+                        <button class="qty-btn" onclick="updateQuantity('${item.id}', 1)">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const tax = subtotal * 0.1;
+        const shipping = subtotal > 100 ? 0 : 10;
+        const total = subtotal + tax + shipping;
+
+        cartFooter.innerHTML = `
+        <div class="cart-summary">
+            <div class="cart-summary-row">
+                <span style="color: var(--muted-foreground);">Subtotal</span>
+                <span>$${subtotal.toFixed(2)}</span>
+            </div>
+            <div class="cart-summary-row">
+                <span style="color: var(--muted-foreground);">Shipping</span>
+                <span>$${shipping.toFixed(2)}</span>
+            </div>
+            <div class="cart-summary-row">
+                <span style="color: var(--muted-foreground);">Tax (10%)</span>
+                <span>$${tax.toFixed(2)}</span>
+            </div>
+            <div class="cart-summary-row total">
+                <span>Total</span>
+                <span>$${total.toFixed(2)}</span>
+            </div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="checkout()">Proceed to Checkout</button>
+    `;
+    }
+
+    // Show/hide cart
+    function openCart() {
+        document.getElementById('cartDrawer').classList.add('active');
+        renderCart();
+    }
+
+    function closeCart() {
+        document.getElementById('cartDrawer').classList.remove('active');
+    }
+
+    //CHECK OUT FUNCTION
+    function checkout() {
+        if (cart.length === 0) {
+            alert('Your cart is empty. Please add items before checking out.');
+            return;
+        }
+
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const tax = subtotal * 0.1;
+        const shipping = subtotal > 100 ? 0 : 10;
+        const total = subtotal + tax + shipping;
+
+        // Ask for customer email
+        const email = prompt('Enter your email for payment receipt:');
+        if (!email) return;
+
+        // Initiate payment with backend
+        fetch('http://localhost:3000/create-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ total, email })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.paynowUrl) {
+                    // Redirect user to PayNow checkout page
+                    window.location.href = data.paynowUrl;
+                } else {
+                    alert('Failed to initiate payment.');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Payment failed.');
+            });
+
+        // Close cart drawer after checkout
+        closeCart();
+    }
+
+    // Show notification
+    function showNotification(message) {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+        position: fixed;
+        top: 5rem;
+        right: 1rem;
+        background: var(--card);
+        border: 1px solid var(--card-border);
+        padding: 1rem 1.5rem;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        z-index: 1000;
+        animation: fadeIn 0.3s ease-out;
+    `;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.style.animation = 'fadeOut 0.3s ease-out';
+            setTimeout(() => notification.remove(), 300);
+        }, 2000);
+    }
+
+    // Initialize cart
+    updateCartCount();
+
+
+
+
+
+
+
+
+    /*QUICK BUTTON VIEW SECTION*/
+
+
+    // Create product card
+    function createProductCard(product) {
+        return `
+        <div class="product-card fade-in">
+            ${product.badge ? `<div class="product-badge">${product.badge}</div>` : ''}
+            <button class="wishlist-btn" data-id="${product.id}" onclick="toggleWishlist('${product.id}')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+            </button>
+            <div class="product-card-inner">
+                <div class="product-info-main">
+                    <div class="product-image-wrapper">
+                        <img src="${product.image}" alt="${product.name}" class="product-image">
+                        <button class="quick-view" onclick="showQuickView('${product.id}')">Quick View</button>
+                    </div>
+                    <h3 class="product-title">${product.name}</h3>
+                    <div class="product-rating">${renderStars(product.rating)}</div>
+                    <div class="product-price">$${product.price.toFixed(2)}</div>
+                    <button class="btn btn-primary btn-full" onclick="addToCart('${product.id}')">Add to Cart</button>
+                </div>
+                ${product.specs && product.specs.length > 0 ? `
+                <div class="product-specs-overlay">
+                    <ul class="specs-list">
+                        ${product.specs.map(spec => `<li>• ${spec}</li>`).join('')}
+                    </ul>
+                </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+    }
+
+    // Function to handle Quick View
+
+    function openQuickView(product) {
+        document.getElementById('modalProductName').innerText = product.name;
+        document.getElementById('modalProductImage').src = product.image; // Set the image source
+        document.getElementById('modalProductDetails').innerText = product.details; // Set product details
+        document.getElementById('quickViewModal').style.display = 'flex'; // Show the modal
+    }
+
+    function closeQuickView() {
+        document.getElementById('quickViewModal').style.display = 'none'; // Hide the modal
+    }
+
+
+
+
+
+
+
+
+
+
+    // Function to handle Quick View
+    let modalProductId;
+
+    function showQuickView(productId) {
+        const product = products.find(p => p.id === productId);
+        if (!product) return;
+
+        modalProductId = product.id; // Store the product ID for adding to the cart
+
+        // Populate modal with product data
+        document.getElementById('modalProductName').innerText = product.name;
+        document.getElementById('modalProductImage').src = product.image;
+
+        // Create detailed information (specifications)
+        const details = `
+        <h4>Specifications:</h4>
+        <ul>
+            <li>Price: $${product.price.toFixed(2)}</li>
+            <li>Category: ${product.category}</li>
+            <li>Rating: ${renderStars(product.rating)}</li>
+            ${product.specs ? product.specs.map(spec => `<li>${spec}</li>`).join('') : `<li>No specifications available.</li>`}
+        </ul>
+    `;
+        document.getElementById('modalProductDetails').innerHTML = details;
+
+        // Show the modal
+        document.getElementById('quickViewModal').style.display = 'flex';
+    }
+
+    // Function to close the modal
+    function closeQuickView() {
+        document.getElementById('quickViewModal').style.display = 'none';
+    }
+
+
+
+
+
+
+
+
+
+
+//ADD TO CART AND QUICKVIEW BUTTON
+
+
+function createProductCard(product) {
+    return `
+    <div class="product-card fade-in" style="position: relative;">
+        ${product.badge ? `<div class="product-badge">${product.badge}</div>` : ''}
+
+        <!-- Wishlist button -->
+        <button class="wishlist-btn" data-id="${product.id}" onclick="toggleWishlist('${product.id}')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06
+                         a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78
+                         1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+        </button>
+
+        <div class="product-card-inner">
+            <div class="product-info-main">
+
+                <!-- Product image wrapper -->
+                <div class="product-image-wrapper">
+                    <img src="${product.image}" alt="${product.name}" class="product-image">
+
+                    <!-- Hover buttons -->
+                    <button class="quick-view" onclick="showQuickView('${product.id}')">Quick View</button>
+                    <button class="add-to-cart-hover" onclick="addToCart('${product.id}')">Add to Cart</button>
+                </div>
+
+                <!-- Product info -->
+                <h3 class="product-title">${product.name}</h3>
+                <div class="product-rating">${renderStars(product.rating)}</div>
+                <div class="product-price">$${product.price.toFixed(2)}</div>
+
+        
+<!-- Quick action icons in bottom-right corner -->
+<div class="product-action-icons-corner">
+    <!-- Quick View -->
+    <span title="Quick View" onclick="showQuickView('${product.id}')" class="icon-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+             stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+    </span>
+
+    <!-- Add to Cart -->
+    <span title="Add to Cart" onclick="addToCart('${product.id}')" class="icon-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+             stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"></path>
+        </svg>
+    </span>
+</div>
+
+            </div>
+
+            ${product.specs && product.specs.length > 0 ? `
+            <div class="product-specs-overlay">
+                <ul class="specs-list">
+                    ${product.specs.map(spec => `<li>• ${spec}</li>`).join('')}
+                </ul>
+            </div>` : ''}
+        </div>
+    </div>
+    `;
+}
+
+
+
+
+
+// PRODUCT PRICE FILTER — UNIVERSAL & SAFE
+document.addEventListener('DOMContentLoaded', () => {
+    const priceRange = document.getElementById('priceRange');
+    const minPriceDisplay = document.getElementById('minPrice');
+    const maxPriceDisplay = document.getElementById('maxPrice');
+    const container = document.getElementById('allProducts');
+
+    if (!priceRange || !container) return;
+
+    // UI init
+    minPriceDisplay.textContent = '$0';
+    maxPriceDisplay.textContent = `$${priceRange.max}`;
+
+    let isFiltering = false;
+    let currentPage = 1;
+
+    // 🔹 Detect available product sources
+    const page1 = typeof products !== 'undefined' ? products : [];
+    const page2 = typeof productsPage2 !== 'undefined' ? productsPage2 : [];
+
+    const hasMultiplePages = page2.length > 0;
+    const mergedProducts = [...page1, ...page2];
+
+    // 🔹 Render helper
+    function render(list) {
+        container.innerHTML = list.map(p => createProductCard(p)).join('');
+    }
+
+    // 🔹 Initial render → CURRENT PAGE ONLY
+    render(page1);
+
+    // 🔹 Price filter
+    priceRange.addEventListener('input', () => {
+        const value = Number(priceRange.value);
+        minPriceDisplay.textContent = `$${value.toFixed(2)}`;
+
+        // Reset state
+        if (value === 0) {
+            isFiltering = false;
+            render(currentPage === 1 ? page1 : page2);
+            return;
+        }
+
+        // Filter ALL products
+        isFiltering = true;
+        const filtered = mergedProducts.filter(p => p.price <= value);
+        render(filtered);
+    });
+
+    // 🔹 Pagination support (if it exists)
+    document.querySelectorAll('.pagination button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (isFiltering) return;
+
+            const page = Number(btn.dataset.page);
+            if (!page) return;
+
+            currentPage = page;
+            render(page === 1 ? page1 : page2);
+        });
+    });
+});
+
+
+    </script>
+    <script src="scripts/cart.js"></script>
+    <script src="scripts/main.js"></script>
+      <script src="scripts/bot.js"></script>
+</body>
+</html>
