@@ -204,3 +204,5 @@
     min-width: auto;
     padding: 0.5rem 1rem;
 }
+
+.product-specs-overlay { display: none !important; }

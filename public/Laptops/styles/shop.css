@@ -247,7 +247,7 @@ transition: width 0.3s ease;
     width: 100%;
 }
 
-.product-specs-overlay {
+.product-specs-overlay { display: none !important; 
     position: absolute;
     top: 0;
     left: 100%;
@@ -270,11 +270,7 @@ transition: width 0.3s ease;
 }
 
 /* Show specs on hover of the card */
-.product-card:hover .product-specs-overlay {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-}
+/* Hover specs disabled as requested */
 
 .specs-list {
     list-style: none;
@@ -294,7 +290,7 @@ transition: width 0.3s ease;
    Usually hover effects don't work well on mobile. 
    We can just verify on desktop first as per user request "at right" */
 @media (max-width: 1024px) {
-    .product-specs-overlay {
+    .product-specs-overlay { display: none !important; 
         display: none;
         /* Hide on smaller screens where side-by-side isn't possible */
     }

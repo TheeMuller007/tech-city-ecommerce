@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,7 +7,7 @@
     <title>Contact Us - Tech City</title>
     
     <!-- Central Styles -->
-    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="/styles/main.css">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -233,7 +233,7 @@
         <div class="container">
             <div class="header-content">
                 <a href="/index.html" class="logo">
-                    <img src="../images/techcity1.jpg" alt="Logo" width="30" height="30" class="logo-icon">
+                    <img src="/images/techcity1.jpg" alt="Logo" width="30" height="30" class="logo-icon">
                 </a>
                 <nav class="nav" id="mainNav">
                     <a href="/index.html" class="nav-link">Home</a>
@@ -303,7 +303,7 @@
             <!-- Form Card -->
             <div class="form-card">
                 <div class="notch-logo">
-                    <img src="../images/techcity1.jpg" alt="Tech City">
+                    <img src="/images/techcity1.jpg" alt="Tech City">
                 </div>
                 <div class="form-header">
                     <h3 style="font-size: 1.5rem; font-weight: 800;">Send a Message</h3>
@@ -339,23 +339,101 @@
         </div>
     </div>
 
-    <!-- Footer (Consistent) -->
-    <footer class="footer" style="padding: 4rem 0;">
-        <div class="container" style="text-align: center;">
-            <p style="color: var(--slate);">&copy; 2025 TECH CITY. All rights reserved.</p>
+    <!-- Footer -->
+    <!-- Sponsors Section -->
+<section class="product-sponsors">
+    <div class="container sponsor-logos">
+         <a href="https://www.hp.com" target="_blank" title="HP">
+            <img src="/images/hp.png" alt="HP Logo" class="sponsor-logo">
+        </a>
+         <a href="https://www.dell.com" target="_blank" title="Dell">
+            <img src="/images/dell.png" alt="Dell Logo" class="sponsor-logo">
+        </a>
+         <a href="https://www.lenovo.com" target="_blank" title="Lenovo">
+            <img src="/images/lenovo.png" alt="Lenovo Logo" class="sponsor-logo">
+        </a>
+         <a href="https://www.acer.com" target="_blank" title="Acer">
+            <img src="/images/acer.png" alt="Acer Logo" class="sponsor-logo">
+        </a>
+         <a href="https://www.epson.com" target="_blank" title="Epson">
+            <img src="/images/epson.png" alt="Epson Logo" class="sponsor-logo">
+        </a>
+         <a href="https://www.tp-link.com" target="_blank" title="TP Link">
+            <img src="/images/tp link.png" alt="TP Link Logo" class="sponsor-logo">
+        </a>
+         <a href="https://www.oraimo.com" target="_blank" title="Oraimo">
+            <img src="/images/oraimo.png" alt="Oraimo Logo" class="sponsor-logo">
+        </a>
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <div class="header-content">
+                    <a href="/index.html" class="logo">
+                        <img src="/images/techcity1.jpg" alt="Logo" class="logo-icon">
+                    </a>
+                </div>
+                <p class="footer-description">Your trusted destination for premium tech products and accessories.</p>
+
+                <div class="social-icons">
+                <h4>Follow Us</h4>
+                <ul>
+                    <li><a href="https://facebook.com" target="_blank"><i class="fab fa-facebook-f"></i></a></li>
+                    <li><a href="https://instagram.com" target="_blank"><i class="fab fa-instagram"></i></a></li>
+                    <li><a href="https://twitter.com" target="_blank"><i class="fab fa-twitter"></i></a></li>
+                </ul>
+            </div>
+            </div>
+
+            
+
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul class="footer-links">
+                    <li><a href="/index.html">Home</a></li>
+                    <li><a href="/shop/index.html">Shop</a></li>
+                    <li><a href="/about/about.html">About</a></li>
+                    <li><a href="/contact/contact.html">Contact</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Categories</h4>
+                <ul class="footer-links">
+                    <li><a href="/Laptops/index.html">Laptops</a></li>
+                    <li><a href="/smartphones/index.html">Smartphones</a></li>
+                    <li><a href="/accessories/index.html">Accessories</a></li>
+                    <li><a href="/bags/bags.html">Bags & Satchels</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <ul class="footer-links">
+                    <li>Email: info@techcity.com</li>
+                    <li>Phone: +263......</li>
+                    <li>Address: 63 Speke Ave, Harare, Zimbabwe</li>
+                </ul>
+            </div>
         </div>
-    </footer>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2025 TECH CITY. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
 
     <!-- WhatsApp Button -->
-    <a href="https://wa.me/263783187312" class="whatsapp-button" target="_blank" aria-label="Chat with us on WhatsApp">
-        <i class="fab fa-whatsapp"></i>
-    </a>
+    
 
     <!-- Scripts -->
-    <script src="../scripts/auth.js"></script>
-    <script src="../scripts/cart.js"></script>
-    <script src="../scripts/main.js"></script>
-    <script src="../scripts/bot.js"></script>
+    <script src="/scripts/auth.js"></script>
+    <script src="/scripts/cart.js"></script>
+    <script src="/scripts/search.js"></script>`n    <script src="/scripts/main.js"></script>
+    <script src="/scripts/bot.js"></script>
 
     <script>
         document.getElementById('contactForm')?.addEventListener('submit', function(e) {
@@ -384,5 +462,16 @@
         });
     </script>
 
+<a href="https://wa.me/263783187312" class="whatsapp-button" target="_blank" aria-label="Chat with us on WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+</a>
 </body>
 </html>
+
+
+
+
+
+
+
+

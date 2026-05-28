@@ -54,7 +54,7 @@ window.renderProducts = function() {
     startCardImageRotation(productsToRender);
 };
 
-function createProductCard(product) {
+function createProductCard(product, hideSpecs = false) {
     const images = (product.images && Array.isArray(product.images) && product.images.length > 0) 
                    ? product.images 
                    : (product.image ? [product.image] : ['/images/placeholder.jpg']);
@@ -75,7 +75,7 @@ function createProductCard(product) {
             <div class="product-info-main" style="display: grid; grid-template-columns: 1fr auto; align-items: center;">
                 <div class="product-image-wrapper" style="grid-column: 1 / -1;">
                     <img src="${images[0]}" alt="${product.name}" class="product-image" id="product-img-${product.id}" onerror="this.src='/images/placeholder.jpg'">
-                    <button class="quick-view" onclick="showQuickView('${product.id}')">Quick View</button>
+                    <button class="quick-view" onclick="event.preventDefault(); event.stopPropagation(); showQuickView('${product.id}')">Quick View</button>
                     ${product.stock_quantity > 0 ? 
                         `<button class="add-to-cart-hover" onclick="addToCart('${product.id}')">Add to Cart</button>` : 
                         `<button class="add-to-cart-hover out-of-stock" disabled style="background: #ccc; cursor: not-allowed;">Out of Stock</button>`
@@ -84,8 +84,8 @@ function createProductCard(product) {
                 <h3 class="product-title" style="grid-column: 1 / -1;">${product.name}</h3>
                 <div class="product-rating" style="grid-column: 1 / -1;">${renderStars(product.rating)}</div>
                 <div class="product-price" style="grid-column: 1; margin-bottom: 0;">$${parseFloat(product.price).toFixed(2)}</div>
-                <div class="product-action-icons-corner" style="grid-column: 2; position: static; margin-bottom: 0;">
-                    <span title="Quick View" onclick="showQuickView('${product.id}')" class="icon-btn">
+                <div class="product-action-icons-corner" style="grid-column: 2; margin-bottom: 0;">
+                    <span title="Quick View" onclick="event.preventDefault(); event.stopPropagation(); showQuickView('${product.id}')" class="icon-btn">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="11" cy="11" r="8"></circle>
                             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -100,7 +100,7 @@ function createProductCard(product) {
                     </span>
                 </div>
             </div>
-            ${product.specs && Array.isArray(product.specs) && product.specs.length > 0 ? `
+            ${!hideSpecs && product.specs && Array.isArray(product.specs) && product.specs.length > 0 ? `
             <div class="product-specs-overlay">
                 <ul class="specs-list">
                     ${product.specs.slice(0, 4).map(s => `<li>• ${s}</li>`).join('')}
@@ -180,7 +180,14 @@ async function fetchProducts() {
             
             if (featured.length > 0) {
                 // Repeat to ensure there are enough items to scroll nicely
-                track.innerHTML = featured.map(p => createProductCard(p)).join('').repeat(4);
+                track.innerHTML = featured.map(p => {
+                    // Remove 'Featured' text for the slider badges on home page
+                    const pForSlider = { ...p };
+                    if (pForSlider.badge && pForSlider.badge.toLowerCase() === 'featured') {
+                        pForSlider.badge = '';
+                    }
+                    return createProductCard(pForSlider, true);
+                }).join('').repeat(4);
             } else {
                 track.innerHTML = '<div style="padding: 20px;">No featured products available.</div>';
             }
@@ -195,29 +202,32 @@ async function fetchProducts() {
 fetchProducts();
 
 window.showQuickView = function(id) {
-    const product = products.find(p => p.id == id);
+    const product = (window.products || []).find(p => p.id == id);
     if (!product) return;
     
-    let modal = document.getElementById('quickViewModal');
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'quickViewModal';
-        modal.className = 'modal';
-        modal.style.cssText = `
-            display: none; 
-            position: fixed; 
-            inset: 0; 
-            background: rgba(15, 23, 42, 0.7); 
-            z-index: 9999; 
-            align-items: center; 
-            justify-content: center; 
-            padding: 20px; 
-            backdrop-filter: blur(8px);
-            animation: fadeIn 0.4s ease;
-        `;
-        
-        // Add custom scrollbar styles for the details section
+    const existingModal = document.getElementById('quickViewModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    let modal = document.createElement('div');
+    modal.id = 'quickViewModal';
+    modal.style.cssText = `
+        display: none; 
+        position: fixed; 
+        inset: 0; 
+        background: rgba(15, 23, 42, 0.7); 
+        z-index: 9999; 
+        align-items: center; 
+        justify-content: center; 
+        padding: 20px; 
+        backdrop-filter: blur(8px);
+        animation: fadeIn 0.4s ease;
+    `;
+    
+    if (!document.getElementById('quickViewStyles')) {
         const style = document.createElement('style');
+        style.id = 'quickViewStyles';
         style.textContent = `
             #quickViewModal div::-webkit-scrollbar { width: 6px; }
             #quickViewModal div::-webkit-scrollbar-track { background: transparent; }
@@ -226,211 +236,286 @@ window.showQuickView = function(id) {
             @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         `;
         document.head.appendChild(style);
-        
-        modal.innerHTML = `
-            <div class="modal-content" style="background: white; padding: 0; border-radius: 24px; width: 95%; max-width: 1100px; height: 85vh; max-height: 850px; overflow: hidden; position: relative; box-shadow: 0 50px 100px -20px rgba(0,0,0,0.3); display: grid; grid-template-columns: 1fr 1fr;">
-                <button onclick="closeQuickView()" style="position: absolute; right: 24px; top: 24px; background: white; border: none; font-size: 1rem; cursor: pointer; color: #64748b; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #f1f5f9;" onmouseover="this.style.background='#f8fafc';this.style.color='#0f172a';this.style.transform='rotate(90deg)'" onmouseout="this.style.background='white';this.style.color='#64748b';this.style.transform='rotate(0deg)'">
-                    <i class="fas fa-times"></i>
-                </button>
-                
-                <!-- LEFT COLUMN: Gallery & Basic Info -->
-                <div style="background: #fdfdfd; display: flex; flex-direction: column; border-right: 1px solid #f1f5f9; overflow-y: auto;">
-                    <div style="position: relative; background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 60px; min-height: 400px;">
-                        <div id="modalProductImageContainer"></div>
-                    </div>
-                    
-                    <div style="padding: 40px; background: white;">
-                        <h2 id="modalProductName" style="margin: 0 0 10px 0; font-size: 2rem; font-weight: 800; color: #0f172a; line-height: 1.2;"></h2>
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
-                            <div id="modalProductPrice" style="font-size: 1.8rem; font-weight: 700; color: #0f172a;"></div>
-                            <div id="modalStockStatus"></div>
-                        </div>
-                        <p id="modalProductDescription" style="margin: 0; color: #64748b; line-height: 1.6; font-size: 1rem;"></p>
-                    </div>
+    }
+    
+    modal.innerHTML = `
+        <div style="background: white; padding: 0; border-radius: 24px; width: 95%; max-width: 1100px; height: 85vh; max-height: 850px; overflow: hidden; position: relative; box-shadow: 0 50px 100px -20px rgba(0,0,0,0.3); display: grid; grid-template-columns: 1fr 1fr;">
+            <button id="modalCloseBtn" style="position: absolute; right: 24px; top: 24px; background: white; border: none; font-size: 1rem; cursor: pointer; color: #64748b; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.3s; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #f1f5f9;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            
+            <div style="background: #fdfdfd; display: flex; flex-direction: column; border-right: 1px solid #f1f5f9; overflow-y: auto;">
+                <div style="position: relative; background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 12px 24px 0 24px; min-height: 200px;">
+                    <div id="modalProductImageContainer" style="width: 100%;"></div>
                 </div>
                 
-                <!-- RIGHT COLUMN: Technical Specs -->
-                <div style="padding: 50px; overflow-y: auto; display: flex; flex-direction: column; background: #f8fafc; scrollbar-width: thin;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                        <span id="modalProductCategory" style="font-size: 0.85rem; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 0.1em;"></span>
-                        <div style="display: flex; gap: 2px; color: #fbbf24; font-size: 1rem;" id="modalProductRating"></div>
+                <div style="padding: 4px 40px 24px 40px; background: white;">
+                    <h2 id="modalProductName" style="margin: 0 0 10px 0; font-size: 2rem; font-weight: 800; color: #0f172a; line-height: 1.2;"></h2>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                        <div id="modalProductPrice" style="font-size: 1.8rem; font-weight: 700; color: #0f172a;"></div>
+                        <div id="modalStockStatus"></div>
                     </div>
+                    <p id="modalProductDescription" style="margin: 0; color: #64748b; line-height: 1.6; font-size: 1rem;"></p>
+                </div>
+            </div>
+            
+            <div style="padding: 50px; overflow-y: auto; display: flex; flex-direction: column; background: #f8fafc; scrollbar-width: thin;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                    <span id="modalProductCategory" style="font-size: 0.85rem; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 0.1em;"></span>
+                    <div style="display: flex; gap: 2px; color: #fbbf24; font-size: 1rem;" id="modalProductRating"></div>
+                </div>
 
-                    <div id="modalProductDetails" style="flex: 1;">
-                        <!-- Technical Specs Card will be injected here -->
-                    </div>
-                    
-                    <div style="margin-top: 40px; display: flex; flex-direction: column; gap: 15px;">
-                        <button class="btn btn-primary" id="modalAddToCartBtn" style="width: 100%; padding: 20px; font-size: 1.15rem; border-radius: 16px; border: none; background: #0f172a; color: white; cursor: pointer; font-weight: 700; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15);" onmouseover="this.style.background='#1e293b';this.style.transform='translateY(-2px)'" onmouseout="this.style.background='#0f172a';this.style.transform='translateY(0)'">
-                            <i class="fas fa-shopping-bag"></i> Add to Cart
-                        </button>
-                        <div style="text-align: center; color: #94a3b8; font-size: 0.85rem; font-weight: 500;">
-                            <i class="fas fa-shield-alt" style="margin-right: 5px;"></i> Official TechCity Warranty & Support
-                        </div>
+                <div id="modalProductDetails" style="flex: 1;"></div>
+                
+                <div style="margin-top: 40px; display: flex; flex-direction: column; gap: 15px;">
+                    <button class="btn btn-primary" id="modalAddToCartBtn" style="width: 100%; padding: 20px; font-size: 1.15rem; border-radius: 16px; border: none; background: #0f172a; color: white; cursor: pointer; font-weight: 700; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg> Add to Cart
+                    </button>
+                    <div style="text-align: center; color: #94a3b8; font-size: 0.85rem; font-weight: 500; display: flex; justify-content: center; align-items: center; gap: 5px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Official TechCity Warranty
                     </div>
                 </div>
             </div>
-        `;
-        document.body.appendChild(modal);
-        
-        // Close on backdrop click
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeQuickView();
-        });
-    }
-
-    const images = (product.images && Array.isArray(product.images) && product.images.length > 0) 
-                   ? product.images 
-                   : (product.image ? [product.image] : ['/images/placeholder.jpg']);
-    
-    // Update Add to Cart button
-    const addToCartBtn = document.getElementById('modalAddToCartBtn');
-    if (addToCartBtn) {
-        addToCartBtn.onclick = () => {
-            addToCart(product.id);
-            closeQuickView();
-        };
-        if (product.stock_quantity <= 0) {
-            addToCartBtn.disabled = true;
-            addToCartBtn.style.background = '#ccc';
-            addToCartBtn.innerText = 'Out of Stock';
-        } else {
-            addToCartBtn.disabled = false;
-            addToCartBtn.style.background = '#6366f1';
-            addToCartBtn.innerText = 'Add to Cart';
-        }
-    }
-    
-    document.getElementById('modalProductName').innerText = product.name;
-    document.getElementById('modalProductCategory').innerText = product.category;
-    document.getElementById('modalProductDescription').innerText = product.description || '';
-    document.getElementById('modalProductRating').innerHTML = renderStars(product.rating);
-    
-    // Price handling
-    const price = parseFloat(product.price);
-    document.getElementById('modalProductPrice').innerHTML = `
-        $${price.toFixed(2)}
-        <span style="font-size: 1rem; color: #94a3b8; text-decoration: line-through; font-weight: 400; margin-left: 10px;">$${(price * 1.2).toFixed(2)}</span>
+        </div>
     `;
-
-    // Stock Status
-    const stockEl = document.getElementById('modalStockStatus');
-    if (product.stock_quantity > 0) {
-        stockEl.innerHTML = `
-            <span style="background: #ecfdf5; color: #059669; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
-                <div style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: pulse 2s infinite;"></div>
-                In Stock (${product.stock_quantity})
-            </span>
-            <style>@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }</style>
-        `;
-    } else {
-        stockEl.innerHTML = `
-            <span style="background: #fef2f2; color: #dc2626; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
-                <div style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%;"></div>
-                Out of Stock
-            </span>
-        `;
-    }
-
-    // Specs handling
-    let specsList = product.specs;
-    if (typeof specsList === 'string') {
-        try { specsList = JSON.parse(specsList); } catch(e) { specsList = []; }
-    }
+    document.body.appendChild(modal);
     
-    const detailsContainer = document.getElementById('modalProductDetails');
-    if (Array.isArray(specsList) && specsList.length > 0) {
-        detailsContainer.innerHTML = `
-            <div style="background: white; border-radius: 20px; padding: 30px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-                <h3 style="margin: 0 0 20px 0; font-size: 0.9rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; display: flex; align-items: center; gap: 10px;">
-                    <i class="fas fa-list-ul" style="color: #6366f1;"></i> Key Features
-                </h3>
-                <div style="display: grid; grid-template-columns: 1fr; gap: 15px;">
-                    ${specsList.map(spec => `
-                        <div style="display: flex; align-items: flex-start; gap: 12px;">
-                            <div style="width: 22px; height: 22px; background: #eff6ff; color: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;">
-                                <i class="fas fa-check" style="font-size: 0.7rem;"></i>
-                            </div>
-                            <span style="font-size: 0.95rem; color: #1e293b; font-weight: 500; line-height: 1.4;">${spec}</span>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        `;
-    } else {
-        detailsContainer.innerHTML = `
-            <div style="text-align: center; padding: 40px; background: white; border-radius: 20px; border: 2px dashed #e2e8f0;">
-                <p style="color: #94a3b8; font-style: italic;">Detailed specifications for this product are currently being updated.</p>
-            </div>
-        `;
-    }
-
-
-    
-    const imgContainer = document.getElementById('modalProductImageContainer');
-    
-    let currentImageIndex = 0;
-    
-    const renderSlider = () => {
-        imgContainer.innerHTML = `
-            <div style="position: relative; width: 100%; height: 350px; display: flex; align-items: center; justify-content: center; background: #fff; border-radius: 8px; overflow: hidden;">
-                <img src="${images[currentImageIndex]}" style="max-width: 100%; max-height: 100%; object-fit: contain; cursor: zoom-in;" onclick="openFullScreenImage('${images[currentImageIndex]}')" onerror="this.src='/images/placeholder.jpg'">
-                ${images.length > 1 ? `
-                    <button id="qvPrev" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.8)'" onmouseout="this.style.background='rgba(0,0,0,0.5)'"><i class="fas fa-chevron-left"></i></button>
-                    <button id="qvNext" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.8)'" onmouseout="this.style.background='rgba(0,0,0,0.5)'"><i class="fas fa-chevron-right"></i></button>
-                    <div style="position: absolute; bottom: 15px; display: flex; gap: 8px; justify-content: center; width: 100%;">
-                        ${images.map((_, i) => `<div style="width: 8px; height: 8px; border-radius: 50%; background: ${i === currentImageIndex ? '#6366f1' : 'rgba(0,0,0,0.2)'}; transition: all 0.3s;"></div>`).join('')}
-                    </div>
-                ` : ''}
-            </div>
-        `;
-
-        if (images.length > 1) {
-            document.getElementById('qvPrev').onclick = () => {
-                currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
-                renderSlider();
-            };
-            document.getElementById('qvNext').onclick = () => {
-                currentImageIndex = (currentImageIndex + 1) % images.length;
-                renderSlider();
-            };
+    // Safe Escape listener
+    const escapeListener = (e) => {
+        if (e.key === 'Escape') {
+            closeQuickView();
+            document.removeEventListener('keydown', escapeListener);
         }
     };
-    
-    renderSlider();
-    modal.style.display = 'flex';
+    document.addEventListener('keydown', escapeListener);
+
+    // Event binding for close
+    document.getElementById('modalCloseBtn').onclick = (e) => {
+        e.stopPropagation();
+        closeQuickView();
+    };
+
+    if (window.event) {
+        window.event.stopPropagation();
+        window.event.preventDefault();
+    }
+
+    try {
+        console.log("[QuickView] Rendering product:", product.name);
+        const images = (product.images && Array.isArray(product.images) && product.images.length > 0) 
+                       ? product.images 
+                       : (product.image ? [product.image] : ['/images/placeholder.jpg']);
+        
+        const addToCartBtn = document.getElementById('modalAddToCartBtn');
+        if (addToCartBtn) {
+            addToCartBtn.onclick = () => {
+                if (typeof addToCart === 'function') addToCart(product.id);
+                closeQuickView();
+            };
+            if (product.stock_quantity <= 0) {
+                addToCartBtn.disabled = true;
+                addToCartBtn.style.background = '#ccc';
+                addToCartBtn.innerText = 'Out of Stock';
+            } else {
+                addToCartBtn.disabled = false;
+                addToCartBtn.style.background = '#000';
+                addToCartBtn.innerText = 'Add to Cart';
+            }
+        }
+        
+        document.getElementById('modalProductName').innerText = product.name;
+        document.getElementById('modalProductCategory').innerText = product.category || 'Uncategorized';
+        document.getElementById('modalProductDescription').innerText = product.description || '';
+        document.getElementById('modalProductRating').innerHTML = renderStars(product.rating);
+        
+        const price = parseFloat(product.price);
+        document.getElementById('modalProductPrice').innerHTML = `
+            $${price.toFixed(2)}
+            <span style="font-size: 1rem; color: #94a3b8; text-decoration: line-through; font-weight: 400; margin-left: 10px;">$${(price * 1.2).toFixed(2)}</span>
+            <span id="modalOriginalPrice" style="display:none;"></span>
+            <span id="modalDiscountBadge" style="display:none;"></span>
+        `;
+        const originalPriceEl = document.getElementById('modalOriginalPrice');
+        const discountBadgeEl = document.getElementById('modalDiscountBadge');
+        if (originalPriceEl && discountBadgeEl) {
+            if (product.discount) {
+                originalPriceEl.style.display = 'inline';
+                discountBadgeEl.style.display = 'inline';
+                discountBadgeEl.innerText = `-${product.discount}%`;
+            } else {
+                originalPriceEl.style.display = 'none';
+                discountBadgeEl.style.display = 'none';
+            }
+        }
+        
+        const specsList = document.getElementById('modalSpecsList');
+        if (specsList) {
+            if (product.specs && Array.isArray(product.specs)) {
+                specsList.innerHTML = product.specs.map(spec => `<li>• ${spec}</li>`).join('');
+            } else {
+                specsList.innerHTML = '<li>No specifications available</li>';
+            }
+        }
+
+        const stockEl = document.getElementById('modalStockStatus');
+        if (product.stock_quantity > 0) {
+            stockEl.innerHTML = `
+                <span style="background: #ecfdf5; color: #059669; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                    <div style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: pulse 2s infinite;"></div>
+                    In Stock (${product.stock_quantity})
+                </span>
+                <style>@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }</style>
+            `;
+        } else {
+            stockEl.innerHTML = `
+                <span style="background: #fef2f2; color: #dc2626; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                    <div style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%;"></div>
+                    Out of Stock
+                </span>
+            `;
+        }
+
+        let productSpecsArray = product.specs;
+        if (typeof productSpecsArray === 'string') {
+            try { productSpecsArray = JSON.parse(productSpecsArray); } catch(e) { productSpecsArray = []; }
+        }
+        
+        const detailsContainer = document.getElementById('modalProductDetails');
+        if (Array.isArray(productSpecsArray) && productSpecsArray.length > 0) {
+            detailsContainer.innerHTML = `
+                <div style="background: white; border-radius: 20px; padding: 30px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                    <h3 style="margin: 0 0 20px 0; font-size: 0.9rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-list-ul" style="color: #6366f1;"></i> Key Features
+                    </h3>
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 15px;">
+                        ${productSpecsArray.map(spec => `
+                            <div style="display: flex; align-items: flex-start; gap: 12px;">
+                                <div style="width: 22px; height: 22px; background: #eff6ff; color: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;">
+                                    <i class="fas fa-check" style="font-size: 0.75rem;"></i>
+                                </div>
+                                <span style="font-size: 0.95rem; color: #1e293b; font-weight: 500; line-height: 1.4;">${spec}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        } else {
+            detailsContainer.innerHTML = `
+                <div style="text-align: center; padding: 40px; background: white; border-radius: 20px; border: 2px dashed #e2e8f0;">
+                    <p style="color: #94a3b8; font-style: italic;">Detailed specifications for this product are currently being updated.</p>
+                </div>
+            `;
+        }
+
+        const imgContainer = document.getElementById('modalProductImageContainer');
+        let currentImageIndex = 0;
+        
+        const renderSlider = () => {
+            imgContainer.innerHTML = `
+                <div style="position: relative; width: 100%; height: 220px; display: flex; align-items: center; justify-content: center; background: #fff; border-radius: 8px; overflow: hidden;">
+                    <img src="${images[currentImageIndex]}" style="max-width: 100%; max-height: 100%; object-fit: contain; cursor: pointer;" onclick="event.stopPropagation(); openFullScreenImage('${images[currentImageIndex]}')" onerror="this.src='/images/placeholder.jpg'">
+                    ${images.length > 1 ? `
+                        <button id="qvPrev" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+                        <button id="qvNext" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+                        <div style="position: absolute; bottom: 15px; display: flex; gap: 8px; justify-content: center; width: 100%;">
+                            ${images.map((_, i) => `<div style="width: 8px; height: 8px; border-radius: 50%; background: ${i === currentImageIndex ? '#6366f1' : 'rgba(0,0,0,0.2)'}; transition: all 0.3s;"></div>`).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            if (images.length > 1) {
+                document.getElementById('qvPrev').onclick = (e) => {
+                    e.stopPropagation();
+                    currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+                    renderSlider();
+                };
+                document.getElementById('qvNext').onclick = (e) => {
+                    e.stopPropagation();
+                    currentImageIndex = (currentImageIndex + 1) % images.length;
+                    renderSlider();
+                };
+            }
+        };
+        
+        renderSlider();
+        modal.style.display = 'flex';
+        
+        // Setup backdrop click listener safely
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                closeQuickView();
+            }
+        };
+        
+        document.body.style.overflow = 'hidden';
+
+        const track = document.getElementById('featuredTrack');
+        if (track) track.style.animationPlayState = 'paused';
+    } catch (err) {
+        console.error("[QuickView] Critical Render error:", err);
+        // Don't close immediately in debug mode so we can see the error
+        // closeQuickView(); 
+    }
 };
 
 window.openFullScreenImage = function(src) {
     let fs = document.getElementById('fullScreenViewer');
-    if (!fs) {
-        fs = document.createElement('div');
-        fs.id = 'fullScreenViewer';
-        fs.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; display: flex; align-items: center; justify-content: center; cursor: zoom-out; backdrop-filter: blur(5px); opacity: 0; transition: opacity 0.3s ease;';
-        fs.innerHTML = `
-            <img id="fsImage" src="" style="max-width: 90%; max-height: 90%; object-fit: contain; box-shadow: 0 0 50px rgba(0,0,0,0.5); border-radius: 4px;" />
-            <button onclick="document.getElementById('fullScreenViewer').style.opacity='0'; setTimeout(()=>document.getElementById('fullScreenViewer').style.display='none', 300)" style="position: absolute; right: 30px; top: 30px; background: rgba(255,255,255,0.1); border: none; font-size: 2rem; cursor: pointer; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'"><i class="fas fa-times"></i></button>
-        `;
-        document.body.appendChild(fs);
-        
-        fs.addEventListener('click', (e) => {
-            if (e.target === fs || e.target.tagName === 'IMG') {
-                fs.style.opacity = '0';
-                setTimeout(() => fs.style.display = 'none', 300);
-            }
-        });
+    if (fs) {
+        fs.remove(); // Recreate it to avoid event listener ghosting
     }
-    document.getElementById('fsImage').src = src;
+    
+    fs = document.createElement('div');
+    fs.id = 'fullScreenViewer';
+    fs.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(5px); opacity: 0; transition: opacity 0.3s ease;';
+    fs.innerHTML = `
+        <img id="fsImage" src="${src}" style="max-width: 90%; max-height: 90%; object-fit: contain; box-shadow: 0 0 50px rgba(0,0,0,0.5); border-radius: 4px;" />
+        <button id="fsCloseBtn" style="position: absolute; right: 30px; top: 30px; background: rgba(255,255,255,0.1); border: none; font-size: 2rem; cursor: pointer; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.2s;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+    `;
+    document.body.appendChild(fs);
+    
+    const closeFs = () => {
+        fs.style.opacity = '0';
+        setTimeout(() => fs.remove(), 300);
+    };
+
+    document.getElementById('fsCloseBtn').onclick = (e) => {
+        e.stopPropagation();
+        closeFs();
+    };
+
+    fs.onclick = (e) => {
+        if (e.target === fs || e.target.tagName === 'IMG') {
+            closeFs();
+        }
+    };
+    
     fs.style.display = 'flex';
-    // Trigger reflow for transition
-    void fs.offsetWidth;
+    void fs.offsetWidth; // Force reflow
     fs.style.opacity = '1';
 };
 
 window.closeQuickView = () => {
+    console.log("[QuickView] closeQuickView called");
     const modal = document.getElementById('quickViewModal');
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    
+    document.body.style.overflow = '';
+
+    const track = document.getElementById('featuredTrack');
+    if (track) track.style.animationPlayState = 'running';
+
+    const fs = document.getElementById('fullScreenViewer');
+    if (fs) {
+        fs.style.opacity = '0';
+        setTimeout(() => fs.style.display = 'none', 300);
+    }
 };
+
 
 window.toggleWishlist = function(id) {
     const token = localStorage.getItem('techcity_token');

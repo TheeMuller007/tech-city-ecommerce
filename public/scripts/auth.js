@@ -1,7 +1,7 @@
 // auth.js
 // Handles login and registration API requests
 
-const API_BASE_URL = 'http://localhost:5000/api/auth';
+const API_BASE_URL = '/api/auth';
 
 // =====================================
 // USER-SCOPED LOCALSTORAGE HELPERS
@@ -90,36 +90,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (response.ok) {
                     alert('Login successful!');
 
-                    // --- STEP 1: Save any leftover generic data from a previous session
-                    // (In case a previous user forgot to logout, we don't want to pollute
-                    // this new user's namespace — so we simply wipe it first)
+                    // --- STEP 1: Capture Guest Data & Clear Generic Data
+                    const guestCart = JSON.parse(localStorage.getItem('cart') || '[]');
+                    const guestWishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
                     clearGenericUserData();
 
                     // --- STEP 2: Store the JWT token and user profile
                     localStorage.setItem('techcity_token', data.token);
                     
-                    // Normalize backend profile_pic to frontend profilePic
                     const userToStore = {
                         ...data.user,
                         profilePic: data.user.profile_pic
                     };
                     localStorage.setItem('techcity_user', JSON.stringify(userToStore));
 
-                    // --- STEP 3: Restore THIS user's own saved data into generic keys
-                    // If the server returned data, use it. Otherwise fall back to namespace.
-                    if (data.user && data.user.cart_data) {
-                        localStorage.setItem('cart', JSON.stringify(data.user.cart_data));
-                    } else if (data.user && data.user.id) {
-                        restoreUserDataFromNamespace(data.user.id);
+                    // --- STEP 3: Restore & Merge Data
+                    let finalCart = data.user.cart_data || [];
+                    if (guestCart.length > 0) {
+                        // Merge guest cart: add items that aren't already in user's cart
+                        guestCart.forEach(gItem => {
+                            const exists = finalCart.find(uItem => uItem.id == gItem.id);
+                            if (exists) {
+                                exists.quantity = (exists.quantity || 1) + (gItem.quantity || 1);
+                            } else {
+                                finalCart.push(gItem);
+                            }
+                        });
                     }
+                    localStorage.setItem('cart', JSON.stringify(finalCart));
 
-                    if (data.user && data.user.wishlist_data) {
-                        localStorage.setItem('wishlist', JSON.stringify(data.user.wishlist_data));
+                    let finalWishlist = data.user.wishlist_data || [];
+                    if (guestWishlist.length > 0) {
+                        guestWishlist.forEach(gItem => {
+                            if (!finalWishlist.some(uItem => uItem.id == gItem.id)) {
+                                finalWishlist.push(gItem);
+                            }
+                        });
                     }
+                    localStorage.setItem('wishlist', JSON.stringify(finalWishlist));
 
-                    // --- STEP 4: Sync (optional here as we just pulled from server, but safe)
-                    // We don't want to sync immediately after pulling from server to avoid race conditions
-                    // await syncUserDataToServer(data.token);
+                    // --- STEP 4: Sync merged data back to server
+                    await syncUserDataToServer(data.token);
                     
                     // --- STEP 5: Redirect based on user role
                     if (data.user && data.user.role === 'admin') {
@@ -226,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!token) return;
 
         try {
-            const res = await fetch('http://localhost:5000/api/user/profile', {
+            const res = await fetch('/api/user/profile', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {
@@ -259,6 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (res.status === 403 || res.status === 401) {
                 // Token invalid, clear it
                 performLogout();
+                window.location.href = '/login/index.html';
             }
         } catch (err) {
             console.warn("Failed to restore user data from server:", err.message);
@@ -283,7 +295,7 @@ async function syncUserDataToServer(token) {
     const profile_pic = userData.profilePic || null;
 
     try {
-        await fetch('http://localhost:5000/api/user/sync', {
+        await fetch('/api/user/sync', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

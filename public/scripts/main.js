@@ -1,4 +1,5 @@
-// Main JavaScript
+// Main JavaScript - Search & Cart Initializer
+console.log('[main.js] Script parsed and running v8');
 
 // Mobile menu toggle
 document.getElementById('mobileMenuBtn')?.addEventListener('click', function() {
@@ -11,103 +12,150 @@ document.getElementById('cartBtn')?.addEventListener('click', openCart);
 document.getElementById('closeCartBtn')?.addEventListener('click', closeCart);
 document.querySelector('.cart-backdrop')?.addEventListener('click', closeCart);
 
-// Search functionality
-let searchOpen = false;
-document.getElementById('searchBtn')?.addEventListener('click', function() {
-    searchOpen = !searchOpen;
-    if (searchOpen) {
-        const searchBar = document.createElement('div');
-        searchBar.className = 'search-bar';
-        searchBar.id = 'searchBarWrapper';
-        searchBar.innerHTML = `
-            <input type="search" placeholder="Search products..." class="search-input" id="searchInput" autofocus autocomplete="off">
-            <button class="icon-btn" id="closeSearchBtn" aria-label="Close search">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </button>
-        `;
-        this.parentElement.insertBefore(searchBar, this);
-        this.style.display = 'none';
-
-        // Wire up close button
-        document.getElementById('closeSearchBtn').addEventListener('click', closeSearch);
-
-        // Wire up live product filtering
-        const input = document.getElementById('searchInput');
-        input.focus();
-        input.addEventListener('input', function() {
-            const query = this.value.toLowerCase().trim();
-            const container = document.getElementById('allProducts') || document.getElementById('productContainer');
-            if (!container) return;
-
-            // Use the global `products` array populated by products.js
-            const allProds = window.products || [];
-            if (!allProds.length) return;
-
-            // Respect the active category page filter
-            const pathname = window.location.pathname.toLowerCase();
-            const pathMatch = pathname.match(/(laptops|smartphones|tablets|accessories|printers|bags)/);
-            const activeCategory = pathMatch ? pathMatch[0] : null;
-
-            let pool = allProds;
-            if (activeCategory) {
-                pool = allProds.filter(p => {
-                    if (!p.category) return false;
-                    const cat = p.category.toLowerCase().trim();
-                    return cat === activeCategory ||
-                           cat === activeCategory.replace(/s$/, '') ||
-                           activeCategory === cat.replace(/s$/, '');
-                });
-            }
-
-            if (query === '') {
-                // Restore normal paginated view
-                if (window.renderProducts) window.renderProducts();
-            } else {
-                const results = pool.filter(p =>
-                    p.name.toLowerCase().includes(query) ||
-                    (p.description && p.description.toLowerCase().includes(query)) ||
-                    (p.category && p.category.toLowerCase().includes(query))
-                );
-
-                if (results.length === 0) {
-                    container.innerHTML = `
-                        <div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#6b7280;">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" style="margin-bottom:12px;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                            <p style="font-size:1rem;font-weight:600;margin-bottom:4px;">No results for "<em>${query}</em>"</p>
-                            <p style="font-size:0.85rem;">Try a different search term or browse categories.</p>
-                        </div>`;
-                } else {
-                    // Use createProductCard if available, otherwise basic render
-                    if (window.createProductCard) {
-                        container.innerHTML = results.map(p => window.createProductCard(p)).join('');
-                    } else {
-                        container.innerHTML = results.map(p => `<div>${p.name}</div>`).join('');
-                    }
-                    // Hide pagination while searching
-                    const pagination = document.querySelector('.pagination');
-                    if (pagination) pagination.style.display = 'none';
-                }
-            }
-        });
-    } else {
-        closeSearch();
+// ── Search button delegation (multiple strategies for reliability) ──
+// Strategy 1: Event delegation on document body
+document.body.addEventListener('click', (e) => {
+    const btn = e.target.closest('#searchBtn');
+    if (btn) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('[Search] Clicked via body delegation');
+        if (typeof window.openSearch === 'function') window.openSearch();
     }
 });
 
-function closeSearch() {
-    const searchBar = document.getElementById('searchBarWrapper');
-    if (searchBar) searchBar.remove();
+// Strategy 2: Direct binding after DOM ready
+document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('searchBtn');
-    if (btn) btn.style.display = 'flex';
-    searchOpen = false;
-    // Restore pagination and products
-    const pagination = document.querySelector('.pagination');
-    if (pagination) pagination.style.display = '';
-    if (window.renderProducts) window.renderProducts();
+    if (btn) {
+        btn.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('[Search] Clicked via direct onclick');
+            if (typeof window.openSearch === 'function') window.openSearch();
+        };
+        console.log('[Search] Direct binding attached to #searchBtn');
+    } else {
+        console.warn('[Search] #searchBtn not found on DOMContentLoaded');
+    }
+});
+
+window.openSearch = function() {
+    let overlay = document.getElementById('searchOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'searchOverlay';
+        overlay.className = 'search-overlay';
+        overlay.innerHTML = `
+            <div class="search-container">
+                <div class="search-bar-header">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--muted-foreground)">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <input type="text" placeholder="Search products, categories..." class="search-input-main" id="searchInputMain" autocomplete="off">
+                    <button class="icon-btn" id="closeSearchOverlay" aria-label="Close search">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="search-results-container" id="searchResults">
+                    <div class="search-empty-state">
+                        <i class="fas fa-search"></i>
+                        <p>Start typing to search products...</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        const input = document.getElementById('searchInputMain');
+        const resultsContainer = document.getElementById('searchResults');
+
+        input.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            renderSearchResults(query, resultsContainer);
+        });
+
+        document.getElementById('closeSearchOverlay').addEventListener('click', closeSearch);
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closeSearch();
+        });
+        
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && overlay.classList.contains('active')) closeSearch();
+        });
+    }
+
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => document.getElementById('searchInputMain').focus(), 100);
 }
+
+window.closeSearch = function() {
+    const overlay = document.getElementById('searchOverlay');
+    if (overlay) {
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+function renderSearchResults(query, container) {
+    if (!query) {
+        container.innerHTML = `
+            <div class="search-empty-state">
+                <i class="fas fa-search"></i>
+                <p>Start typing to search products...</p>
+            </div>
+        `;
+        return;
+    }
+
+    const allProducts = window.products || [];
+    const results = allProducts.filter(p => 
+        p.name.toLowerCase().includes(query) || 
+        (p.category && p.category.toLowerCase().includes(query)) ||
+        (p.description && p.description.toLowerCase().includes(query))
+    ).slice(0, 8); // Limit results for better UI
+
+    if (results.length === 0) {
+        container.innerHTML = `
+            <div class="search-empty-state">
+                <i class="fas fa-frown"></i>
+                <p>No products found for "${query}"</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = results.map(p => `
+        <div class="search-result-item" onclick="handleSearchResultClick('${p.id}')">
+            <img src="${(p.images && p.images[0]) || p.image || '/images/placeholder.jpg'}" alt="${p.name}" class="search-result-image" onerror="this.src='/images/placeholder.jpg'">
+            <div class="search-result-info">
+                <div class="search-result-name">${p.name}</div>
+                <div class="search-result-meta">
+                    <span>${p.category}</span>
+                    <span class="search-result-price">$${parseFloat(p.price).toFixed(2)}</span>
+                </div>
+            </div>
+            <i class="fas fa-chevron-right" style="font-size: 0.8rem; color: var(--muted-foreground)"></i>
+        </div>
+    `).join('');
+}
+
+window.handleSearchResultClick = function(id) {
+    closeSearch();
+    if (window.showQuickView) {
+        window.showQuickView(id);
+    } else {
+        console.warn("showQuickView not found, retrying...");
+        setTimeout(() => window.showQuickView && window.showQuickView(id), 500);
+    }
+};
+
 
 
 // Set active nav link
@@ -136,40 +184,9 @@ style.textContent = `
             box-shadow: var(--shadow-lg);
         }
     }
-    
-    .search-bar {
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
-        animation: fadeIn 0.3s ease-out;
-    }
-    
-    .search-input {
-        width: 16rem;
-        padding: 0.5rem 1rem;
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        font-size: 0.875rem;
-        font-family: var(--font-sans);
-    }
-    
-    .search-input:focus {
-        outline: none;
-        border-color: var(--primary);
-    }
-    
-    @keyframes fadeOut {
-        from {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        to {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-    }
 `;
 document.head.appendChild(style);
+
 
 
 

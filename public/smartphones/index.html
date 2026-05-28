@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Shop premium laptops, smartphones, and tech accessories at TECH CITY">
     <title>Shop - TECH CITY</title>
-    <link rel="stylesheet" href="styles/main.css">
-    <link rel="stylesheet" href="styles/shop.css">
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/shop.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -17,98 +17,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 
-<style>
-    @media (max-width: 767px) {
-        .nav.active {
-            display: flex;
-            flex-direction: column;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: var(--background);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem;
-            box-shadow: var(--shadow-lg);
-        }
-    }
 
-    .search-bar {
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
-        animation: fadeIn 0.3s ease-out;
-    }
-
-    .search-input {
-        width: 16rem;
-        padding: 0.5rem 1rem;
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        font-size: 0.875rem;
-        font-family: var(--font-sans);
-    }
-
-    .search-input:focus {
-        outline: none;
-        border-color: var(--primary);
-    }
-
-    @keyframes fadeOut {
-        from {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        to {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-    }
-
-
-
-    /* Navbar LOG IN AND REGISTER Button Styles */
-    .nav-button {
-        background-color: #007BFF;
-        /* Bright blue for button */
-        color: white;
-        /* Button text color */
-        padding: 6px 10px;
-        /* Smaller padding for a more compact size */
-        border: none;
-        /* No border */
-        border-radius: 4px;
-        /* Slightly rounded corners */
-        text-decoration: none;
-        /* No underline */
-        font-weight: 500;
-        /* Normal to slightly bold text */
-        margin-right: 10px;
-        /* Space between buttons and nav links */
-        margin-left: auto;
-        /* Push buttons to the right */
-        transition: background-color 0.3s, transform 0.2s;
-        /* Transition effects */
-        font-size: 0.85rem;
-        /* Smaller font size for a more compact button */
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-        /* Reduced shadow for less prominence */
-    }
-
-    .nav-button:hover {
-        background-color: #0056b3;
-        /* Darker blue on hover */
-        transform: scale(1.05);
-        /* Slightly enlarge on hover */
-    }
-
-    /* Ensure the navbar is a flex container */
-    .nav {
-        display: flex;
-        /* Make the navbar a flex container */
-    }
-</style>
 
 <!-- Header -->
 <body>
@@ -116,7 +25,7 @@
     <div class="container">
         <div class="header-content">
             <a href="/index.html" class="logo">
-                <img src="/images/techcity1.jpg" alt="Logo" width="24" height="24" class="logo-icon">
+                <img src="/images/techcity1.jpg" alt="Logo" class="logo-icon">
                 <!--<span class="logo-text">TECH CITY</span>-->
             </a>
             
@@ -131,7 +40,7 @@
                 <a href="/login/index.html" class="nav-button">Login</a>
                 <a href="/register/index.html" class="nav-button">Register</a>
                 
-                <button class="icon-btn" id="searchBtn" aria-label="Search">
+                <button class="icon-btn" id="searchBtn" aria-label="Search" onclick="if(window.openSearch)window.openSearch();else console.error(`[Search] openSearch not defined`)" style="cursor: pointer; position: relative; z-index: 1000;">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8"></circle>
                         <path d="m21 21-4.35-4.35"></path>
@@ -310,36 +219,7 @@
 
 
 
-<section class="product-sponsors">
-    <!--<h2>Our Sponsors</h2>-->
-    <div class="sponsor-logos">
-        <a href="" target="_blank" title="SAMSUNG">
-            <img src="images/icons/samsung.png" alt="SAMSUNG" class="sponsor-logo">
-        </a>
-        <a href="" target="_blank" title="REDMI">
-            <img src="images/icons/redmi.png" alt="REDMI Logo" class="sponsor-logo">
-        </a>
-       
-        <a href="" target="_blank" title="">
-            <img src="images/icons/tecno.png" alt="TECNO Logo" class="sponsor-logo">
-        </a>
-         <a href="" target="_blank" title="INFINIX">
-            <img src="images/icons/infinix.png" alt="INFINIX" class="sponsor-logo">
-        
-         <a href="" target="_blank" title="ITEL">
-            <img src="images/icons/itel.png" alt="ITEL" class="sponsor-logo">
-        </a>
-          <a href="" target="_blank" title="OPPO">
-            <img src="images/icons/oppo.png" alt="OPPO" class="sponsor-logo">
-        </a>
-         <a href="" target="_blank" title="HUAWEI">
-            <img src="images/icons/huawei.png" alt="HUAWEI" class="sponsor-logo">
-        </a>
-         
-         
-        <!-- Add more sponsors as needed -->
-    </div>
-</section>
+
 
 
 
@@ -350,33 +230,61 @@
 
 
 <!-- WhatsApp Button -->
-<a href="https://wa.me/263783187312" class="whatsapp-button" target="_blank" aria-label="Chat with us on WhatsApp">
-    <i class="fab fa-whatsapp"></i>
-</a>
+
+
+<!-- Sponsors Section -->
+
 
 <!-- Footer -->
+<!-- Sponsors Section -->
+<section class="product-sponsors">
+    <div class="container sponsor-logos">
+         <a href="https://www.hp.com" target="_blank" title="HP">
+            <img src="/images/hp.png" alt="HP Logo" class="sponsor-logo">
+        </a>
+         <a href="https://www.dell.com" target="_blank" title="Dell">
+            <img src="/images/dell.png" alt="Dell Logo" class="sponsor-logo">
+        </a>
+         <a href="https://www.lenovo.com" target="_blank" title="Lenovo">
+            <img src="/images/lenovo.png" alt="Lenovo Logo" class="sponsor-logo">
+        </a>
+         <a href="https://www.acer.com" target="_blank" title="Acer">
+            <img src="/images/acer.png" alt="Acer Logo" class="sponsor-logo">
+        </a>
+         <a href="https://www.epson.com" target="_blank" title="Epson">
+            <img src="/images/epson.png" alt="Epson Logo" class="sponsor-logo">
+        </a>
+         <a href="https://www.tp-link.com" target="_blank" title="TP Link">
+            <img src="/images/tp link.png" alt="TP Link Logo" class="sponsor-logo">
+        </a>
+         <a href="https://www.oraimo.com" target="_blank" title="Oraimo">
+            <img src="/images/oraimo.png" alt="Oraimo Logo" class="sponsor-logo">
+        </a>
+    </div>
+</section>
+
 <footer class="footer">
     <div class="container">
         <div class="footer-content">
             <div class="footer-section">
                 <div class="header-content">
                     <a href="/index.html" class="logo">
-                        <img src="images/techcity1.jpg" alt="Logo" width="50" height="50" class="logo-icon">
-                        <!-- Adjusted logo size -->
+                        <img src="/images/techcity1.jpg" alt="Logo" class="logo-icon">
                     </a>
                 </div>
                 <p class="footer-description">Your trusted destination for premium tech products and accessories.</p>
 
-                <div class="footer-section social-icons">
-                    <h4>Follow Us</h4>
-                    <ul>
-                        <li><a href="https://facebook.com" target="_blank"><i class="fab fa-facebook-f"></i></a></li>
-                        <li><a href="https://instagram.com" target="_blank"><i class="fab fa-instagram"></i></a></li>
-                        <li><a href="https://twitter.com" target="_blank"><i class="fab fa-twitter"></i></a></li>
-                    </ul>
-                </div>
+                <div class="social-icons">
+                <h4>Follow Us</h4>
+                <ul>
+                    <li><a href="https://facebook.com" target="_blank"><i class="fab fa-facebook-f"></i></a></li>
+                    <li><a href="https://instagram.com" target="_blank"><i class="fab fa-instagram"></i></a></li>
+                    <li><a href="https://twitter.com" target="_blank"><i class="fab fa-twitter"></i></a></li>
+                </ul>
+            </div>
             </div>
 
+            
 
             <div class="footer-section">
                 <h4>Quick Links</h4>
@@ -387,7 +295,7 @@
                     <li><a href="/contact/contact.html">Contact</a></li>
                 </ul>
             </div>
-
+            
             <div class="footer-section">
                 <h4>Categories</h4>
                 <ul class="footer-links">
@@ -397,7 +305,7 @@
                     <li><a href="/bags/bags.html">Bags & Satchels</a></li>
                 </ul>
             </div>
-
+            
             <div class="footer-section">
                 <h4>Contact</h4>
                 <ul class="footer-links">
@@ -407,7 +315,7 @@
                 </ul>
             </div>
         </div>
-
+        
         <div class="footer-bottom">
             <p>&copy; 2025 TECH CITY. All rights reserved.</p>
         </div>
@@ -433,11 +341,22 @@
     </div>
 </div>
 <script src="/scripts/auth.js"></script>
-<script src="../scripts/bot.js"></script>
+<script src="/scripts/bot.js"></script>
 
-<script src="../scripts/products.js"></script>
-<script src="../scripts/cart.js"></script>
-<script src="scripts/main.js"></script>
+<script src="/scripts/products.js"></script>
+<script src="/scripts/cart.js"></script>
+<script src="/scripts/search.js"></script>`n    <script src="/scripts/main.js"></script>
+<a href="https://wa.me/263783187312" class="whatsapp-button" target="_blank" aria-label="Chat with us on WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+</a>
 </body>
 
 </html>
+
+
+
+
+
+
+
+

@@ -22,7 +22,38 @@ const SESSION = {
     pendingUseCase: null,
     lastProducts:   [],
     chatHistory:    [],
+    products:       [], // local cache for all products
 };
+
+// ── Product Data Fetcher (Global Access) ───────────────────────
+async function ensureProductsLoaded() {
+    if (window.products && window.products.length > 0) {
+        SESSION.products = window.products;
+        return window.products;
+    }
+    if (SESSION.products.length > 0) return SESSION.products;
+
+    try {
+        const response = await fetch('/api/products');
+        const data = await response.json();
+        SESSION.products = data;
+        if (typeof window !== 'undefined') window.products = data;
+        return data;
+    } catch (e) {
+        console.error('Bot failed to fetch products:', e);
+        return [];
+    }
+}
+
+// ── User Data Helper ──────────────────────────────────────────
+
+// ── User Data Helper ──────────────────────────────────────────
+function getUserName() {
+    try {
+        const userData = JSON.parse(localStorage.getItem('techcity_user'));
+        return userData && userData.username ? userData.username : null;
+    } catch (e) { return null; }
+}
 
 // ── Inject Styles (ELITE FROSTED THEME) ──────────────────────────────
 (function() {
@@ -313,7 +344,7 @@ const SESSION = {
     <div class="chatbox-body" id="chatboxBody">
         <div class="chat-date">Today</div>
         <div class="bot-message">
-            <p>Hi there! 👋 I'm your <strong>Tech City Assistant</strong>. How can I help you elevate your tech experience today?</p>
+            <p>Hi ${getUserName() || 'there'}! 👋 I'm your <strong>Tech City Assistant</strong>. How can I help you elevate your tech experience today?</p>
             <span class="message-time">Just now</span>
         </div>
         <div class="typing-indicator" id="typingIndicator">
@@ -493,8 +524,11 @@ function showChips(labels, onClickFn) {
         `;
         btn.onmouseenter = () => { btn.style.background = 'var(--chat-primary)'; btn.style.color = '#fff'; };
         btn.onmouseleave = () => { btn.style.background = '#fff'; btn.style.color = 'var(--chat-primary)'; };
-        btn.onclick = () => {
+        btn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             wrap.remove();
+            const cleanLabel = label.replace(/[^\x00-\x7F]/g, "").trim(); // strip emojis for intent matching
             showUserMsg(label);
             onClickFn(label);
         };
@@ -588,26 +622,40 @@ async function showProducts(list, intro = null) {
         const carouselWrap = document.createElement('div');
         carouselWrap.className = 'product-carousel';
         
-        // Add to body first so we can append to it
-        const botBubble = appendMsg('', 'bot-message');
-        botBubble.innerHTML = ''; // Clear "staggered" placeholder if any
-        botBubble.appendChild(carouselWrap);
+        // Custom message div for carousel (no <p> wrapper to allow full width)
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'bot-message';
+        msgDiv.style.maxWidth = '100%';
+        msgDiv.style.background = 'transparent';
+        msgDiv.style.border = 'none';
+        msgDiv.style.boxShadow = 'none';
+        
+        msgDiv.appendChild(carouselWrap);
+        chatboxBody.appendChild(msgDiv);
 
-        for (const p of list.slice(0, 6)) {
+        // Show up to 5 items initially
+        const limit = 5;
+        list.slice(0, limit).forEach(p => {
             const item = document.createElement('div');
             item.className = 'product-carousel-item';
             item.innerHTML = productCard(p);
             carouselWrap.appendChild(item);
-        }
+        });
 
-        if (list.length > 6) {
+        if (list.length > limit) {
             const more = document.createElement('div');
             more.className = 'product-carousel-item';
-            more.innerHTML = `<div style="padding:40px 20px; text-align:center; color:#888; font-size:0.8rem;">
-                +${list.length - 6} more<br><a href="/shop/index.html" style="color:var(--chat-primary)">View All</a>
+            more.innerHTML = `<div style="padding:60px 20px; text-align:center; color:#1557b1; font-size:0.9rem; background:#f0f4ff; border-radius:16px; border:1px dashed #1557b1; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                <strong>+${list.length - limit} More</strong><br>
+                <a href="/shop/index.html" style="display:inline-block;margin-top:12px;padding:10px 20px;background:#1557b1;color:#fff;border-radius:25px;text-decoration:none;font-weight:600;font-size:0.8rem;">View All →</a>
             </div>`;
             carouselWrap.appendChild(more);
         }
+        
+        const time = document.createElement('span');
+        time.className = 'message-time';
+        time.textContent = 'Just now';
+        msgDiv.appendChild(time);
         
         playSound('receive');
         scroll();
@@ -619,11 +667,13 @@ async function showProducts(list, intro = null) {
 // ═══════════════════════════════════════════════════════════════
 
 window.tcBotAddToCart = function(id) {
-    if (typeof products === 'undefined') {
-        botReply('⚠️ Cart unavailable on this page. Please visit the product page to add items.');
+    const list = (SESSION.products && SESSION.products.length) ? SESSION.products : (window.products || []);
+    if (!list.length) {
+        botReply('⚠️ Still loading product data. Please try again in a moment.');
+        ensureProductsLoaded();
         return;
     }
-    const p = products.find(x => x.id === id);
+    const p = list.find(x => x.id == id); // use == for flexible ID comparison
     if (!p) return;
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
     const existing = cart.find(x => x.id === id);
@@ -659,18 +709,239 @@ function cartSummaryText() {
 //  PRODUCT SEARCH
 // ═══════════════════════════════════════════════════════════════
 
-function searchProducts(query) {
-    if (typeof products === 'undefined') return [];
-    const kw = query.toLowerCase().trim();
-    return products.filter(p =>
-        p.name.toLowerCase().includes(kw)  ||
-        p.category.toLowerCase().includes(kw) ||
-        (p.specs || []).some(s => s.toLowerCase().includes(kw))
-    );
+// ── Category aliases — maps common user terms to DB category names ──
+const CATEGORY_ALIASES = {
+    // Laptops
+    'laptop': 'laptops', 'laptops': 'laptops', 'notebook': 'laptops', 'notebooks': 'laptops',
+    'macbook': 'laptops', 'chromebook': 'laptops', 'ultrabook': 'laptops',
+    'thinkpad': 'laptops', 'ideapad': 'laptops',
+    // Smartphones
+    'phone': 'smartphones', 'phones': 'smartphones', 'smartphone': 'smartphones',
+    'smartphones': 'smartphones', 'mobile': 'smartphones', 'mobiles': 'smartphones',
+    'iphone': 'smartphones', 'samsung': 'smartphones', 'tecno': 'smartphones',
+    'infinix': 'smartphones', 'redmi': 'smartphones', 'xiaomi': 'smartphones',
+    'huawei': 'smartphones', 'oppo': 'smartphones', 'vivo': 'smartphones',
+    'realme': 'smartphones', 'itel': 'smartphones', 'nokia': 'smartphones',
+    'google pixel': 'smartphones', 'pixel': 'smartphones',
+    // Accessories
+    'accessory': 'accessories', 'accessories': 'accessories',
+    'charger': 'accessories', 'chargers': 'accessories',
+    'earphone': 'accessories', 'earphones': 'accessories',
+    'earbuds': 'accessories', 'earbud': 'accessories',
+    'headphone': 'accessories', 'headphones': 'accessories',
+    'headset': 'accessories', 'headsets': 'accessories',
+    'keyboard': 'accessories', 'keyboards': 'accessories',
+    'mouse': 'accessories', 'mice': 'accessories',
+    'power bank': 'accessories', 'powerbank': 'accessories',
+    'cable': 'accessories', 'cables': 'accessories',
+    'case': 'accessories', 'cover': 'accessories', 'covers': 'accessories',
+    'adapter': 'accessories', 'adapters': 'accessories',
+    'speaker': 'accessories', 'speakers': 'accessories',
+    'usb': 'accessories', 'flash drive': 'accessories',
+    'memory card': 'accessories', 'sd card': 'accessories',
+    'screen protector': 'accessories', 'tempered glass': 'accessories',
+    'airpods': 'accessories', 'airpod': 'accessories',
+    'watch': 'accessories', 'smartwatch': 'accessories',
+    // Printers
+    'printer': 'printers', 'printers': 'printers',
+    'printing': 'printers', 'scanner': 'printers', 'scanners': 'printers',
+    'ink': 'printers', 'toner': 'printers', 'cartridge': 'printers',
+    // Bags
+    'bag': 'bags', 'bags': 'bags', 'backpack': 'bags', 'backpacks': 'bags',
+    'satchel': 'bags', 'laptop bag': 'bags',
+    // Tablets
+    'tablet': 'tablets', 'tablets': 'tablets', 'ipad': 'tablets',
+};
+
+function resolveCategory(term) {
+    if (!term) return null;
+    const lower = term.toLowerCase().trim();
+    // Try exact match first
+    if (CATEGORY_ALIASES[lower]) return CATEGORY_ALIASES[lower];
+    
+    // Split lower into words
+    const words = lower.split(/\s+/);
+    
+    // Check if any word exactly matches an alias
+    for (const word of words) {
+        if (CATEGORY_ALIASES[word]) return CATEGORY_ALIASES[word];
+    }
+    
+    // Check if the full term contains any multi-word alias as a word group
+    for (const [alias, cat] of Object.entries(CATEGORY_ALIASES)) {
+        // Only match if the alias exists as a distinct word/phrase in the lower query
+        const escapedAlias = alias.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+        const regex = new RegExp(`\\b${escapedAlias}\\b`, 'i');
+        if (regex.test(lower)) {
+            return cat;
+        }
+    }
+    return null;
+}
+
+/** Detect if a term is a brand name (should match product names, not categories) */
+const BRAND_NAMES = [
+    'hp', 'dell', 'lenovo', 'asus', 'acer', 'apple', 'msi', 'toshiba', 'microsoft',
+    'samsung', 'tecno', 'infinix', 'redmi', 'xiaomi', 'huawei', 'oppo', 'vivo',
+    'realme', 'itel', 'nokia', 'google', 'motorola', 'sony', 'lg', 'oneplus',
+    'jbl', 'anker', 'logitech', 'razer', 'corsair', 'hyperx', 'steelseries',
+    'epson', 'canon', 'brother', 'ricoh',
+    'oraimo', 'baseus', 'ugreen', 'hoco',
+];
+
+function isBrand(term) {
+    return BRAND_NAMES.includes(term.toLowerCase().trim());
+}
+
+/**
+ * Smart product search with weighted scoring.
+ * Returns products sorted by relevance.
+ */
+function searchProducts(query, categoryFilter = null) {
+    const list = (SESSION.products && SESSION.products.length) ? SESSION.products : (window.products || []);
+    console.log(`Bot: searching among ${list.length} products for query "${query}"${categoryFilter ? ` in category "${categoryFilter}"` : ''}`);
+    if (!list.length) return [];
+
+    const rawQuery = query.toLowerCase().trim();
+    // Strip common filler words for better matching
+    const fillerWords = ['show', 'me', 'find', 'search', 'for', 'get', 'any', 'some', 'the', 'a', 'an', 'i', 'want', 'need', 'looking', 'do', 'you', 'have', 'sell', 'got', 'give'];
+    const queryWords = rawQuery.split(/\s+/).filter(w => !fillerWords.includes(w) && w.length > 1);
+    const cleanQuery = queryWords.join(' ');
+    const querySingular = cleanQuery.replace(/s$/, '');
+
+    // Identify if the query contains a category reference
+    const detectedCategory = categoryFilter || resolveCategory(cleanQuery);
+
+    // Identify brand words in query
+    const brandWords = queryWords.filter(w => isBrand(w));
+    // Non-category, non-brand search terms (model numbers, specific product names)
+    const searchTerms = queryWords.filter(w => {
+        if (isBrand(w)) return false;
+        if (CATEGORY_ALIASES[w]) return false;
+        return true;
+    });
+
+    const scored = list.map(p => {
+        const name = (p.name || '').toLowerCase();
+        const cat = (p.category || '').toLowerCase().trim();
+        const desc = (p.description || '').toLowerCase();
+        const specsArr = Array.isArray(p.specs) ? p.specs : (typeof p.specs === 'string' ? [p.specs] : []);
+        const specsText = specsArr.join(' ').toLowerCase();
+
+        let score = 0;
+
+        // ── Category filtering (if a category was detected) ──
+        if (detectedCategory) {
+            const normalizedCat = resolveCategory(cat);
+            if (normalizedCat === detectedCategory || cat === detectedCategory || 
+                cat === detectedCategory.replace(/s$/, '') || detectedCategory === cat + 's') {
+                score += 20; // Category match bonus
+            } else {
+                return { product: p, score: 0 }; // Wrong category, exclude
+            }
+        }
+
+        // ── Exact full query match in name ──
+        if (name === cleanQuery || name === querySingular) {
+            score += 100;
+        }
+        // ── Name contains full query ──
+        else if (name.includes(cleanQuery) || name.includes(querySingular)) {
+            score += 60;
+        }
+
+        // ── Brand matching ──
+        for (const brand of brandWords) {
+            if (name.includes(brand)) score += 30;
+            else if (specsText.includes(brand)) score += 10;
+        }
+
+        // ── Individual search term matching (model numbers, etc.) ──
+        for (const term of searchTerms) {
+            if (name.includes(term)) score += 25;
+            else if (desc.includes(term)) score += 8;
+            else if (specsText.includes(term)) score += 5;
+        }
+
+        // ── All query words present in name (high relevance) ──
+        if (queryWords.length > 1 && queryWords.every(w => name.includes(w))) {
+            score += 40;
+        }
+
+        return { product: p, score };
+    });
+
+    return scored
+        .filter(s => s.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .map(s => s.product);
 }
 
 function filterByBudget(list, max) {
     return list.filter(p => p.price <= max);
+}
+
+/**
+ * Extract a structured product query from natural language.
+ * Returns { searchTerms, category, minPrice, maxPrice } or null.
+ */
+function extractProductQuery(text) {
+    const lower = text.toLowerCase().trim();
+    let category = null;
+    let minPrice = 0;
+    let maxPrice = Infinity;
+    let hasProductIntent = false;
+
+    // Detect category from the text
+    const words = lower.split(/\s+/);
+    for (let i = 0; i < words.length; i++) {
+        // Try two-word combos first
+        if (i < words.length - 1) {
+            const twoWord = words[i] + ' ' + words[i+1];
+            const cat = resolveCategory(twoWord);
+            if (cat) { category = cat; hasProductIntent = true; break; }
+        }
+        const cat = resolveCategory(words[i]);
+        if (cat) { category = cat; hasProductIntent = true; break; }
+        if (isBrand(words[i])) { hasProductIntent = true; }
+    }
+
+    // Detect price range
+    const rangeMatch = lower.match(/(\d+)\s*[-–]\s*(\d+)/) || lower.match(/between\s*(\d+)\s*and\s*(\d+)/i);
+    if (rangeMatch) {
+        minPrice = parseInt(rangeMatch[1]);
+        maxPrice = parseInt(rangeMatch[2]);
+        hasProductIntent = true;
+    } else {
+        const underMatch = lower.match(/(?:under|below|less than|up to|max|at most)\s*\$?\s*(\d+)/i);
+        if (underMatch) { maxPrice = parseInt(underMatch[1]); hasProductIntent = true; }
+        const overMatch = lower.match(/(?:over|above|more than|at least|from|starting)\s*\$?\s*(\d+)/i);
+        if (overMatch) { minPrice = parseInt(overMatch[1]); hasProductIntent = true; }
+        const aroundMatch = lower.match(/(?:around|about|roughly|approximately)\s*\$?\s*(\d+)/i);
+        if (aroundMatch) {
+            const val = parseInt(aroundMatch[1]);
+            minPrice = Math.floor(val * 0.8);
+            maxPrice = Math.ceil(val * 1.2);
+            hasProductIntent = true;
+        }
+    }
+
+    // Remove filler/intent words to get the actual search terms
+    const fillerWords = ['show', 'me', 'find', 'search', 'for', 'get', 'any', 'some',
+        'the', 'a', 'an', 'i', 'want', 'need', 'looking', 'do', 'you', 'have', 'sell',
+        'got', 'give', 'what', 'which', 'best', 'good', 'cheap', 'cheapest',
+        'under', 'below', 'above', 'over', 'between', 'and', 'around', 'about',
+        'less', 'more', 'than', 'from', 'to', 'up', 'at', 'most', 'least',
+        'starting', 'roughly', 'approximately', 'products', 'product', 'items', 'item'];
+    const searchTerms = words.filter(w => {
+        if (fillerWords.includes(w)) return false;
+        if (/^\$?\d+$/.test(w)) return false; // pure numbers (prices)
+        return true;
+    }).join(' ');
+
+    if (!hasProductIntent && !searchTerms) return null;
+
+    return { searchTerms, category, minPrice, maxPrice, hasProductIntent };
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -744,34 +1015,49 @@ async function handleUseCase(txt) {
     );
 }
 
-async function handleBudget(budgetTxt) {
+async function handleBudget(budgetTxt, min = 0, max = Infinity) {
     SESSION.step = null;
-    let maxBudget = Infinity;
-    if (budgetTxt.includes('300') && budgetTxt.includes('Under')) maxBudget = 300;
-    else if (budgetTxt.includes('300')) maxBudget = 500;
-    else if (budgetTxt.includes('500')) maxBudget = 800;
-    else if (budgetTxt.includes('800')) maxBudget = 1200;
+    let minBudget = min;
+    let maxBudget = max;
+
+    // If budgetTxt is one of the chips, handle it specifically
+    if (max === Infinity && min === 0) {
+        if (budgetTxt.includes('300') && budgetTxt.includes('Under')) maxBudget = 300;
+        else if (budgetTxt.includes('300')) { minBudget = 300; maxBudget = 500; }
+        else if (budgetTxt.includes('500')) { minBudget = 500; maxBudget = 800; }
+        else if (budgetTxt.includes('800')) { minBudget = 800; maxBudget = 1200; }
+    }
 
     SESSION.pendingBudget = maxBudget;
 
-    if (typeof products === 'undefined') {
-        await botReply(`I found great options in your budget! 🛍️<br>
+    const allProds = await ensureProductsLoaded();
+    if (!allProds || !allProds.length) {
+        await botReply(`I found great options in that range! 🛍️<br>
             Visit our <a href="/shop/index.html" style="color:#1557b1;font-weight:600;">Shop</a> or
             <a href="/${SESSION.pendingCategory}/index.html" style="color:#1557b1;font-weight:600;">
             ${SESSION.pendingCategory} page</a> to browse and filter.`);
         return;
     }
 
-    let results = searchProducts(SESSION.pendingCategory);
-    if (maxBudget < Infinity) results = filterByBudget(results, maxBudget);
+    // Use category-aware search
+    const resolvedCat = resolveCategory(SESSION.pendingCategory) || SESSION.pendingCategory;
+    let results = searchProducts(SESSION.pendingCategory || 'products', resolvedCat);
+    
+    results = results.filter(p => {
+        const priceStr = String(p.price).replace(/[^0-9.]/g, '');
+        const price = parseFloat(priceStr);
+        if (isNaN(price)) return false;
+        return price >= minBudget && price <= maxBudget;
+    });
+
+    console.log(`Bot: final filtered results count: ${results.length}`);
 
     if (!results.length) {
-        await botReply(`Hmm, nothing matches that exact budget for <strong>${SESSION.pendingCategory}</strong> right now.<br>
-            I can show you the closest options, or you can <a href="${STORE.whatsapp}" target="_blank"
-            style="color:#1557b1;font-weight:600;">WhatsApp us</a> for custom deals.`);
+        await botReply(`Hmm, I couldn't find any **${SESSION.pendingCategory}** in the **$${minBudget}-$${maxBudget}** range right now.<br>
+            I can show you all our <a href="/shop/index.html" style="color:#1557b1;font-weight:600;">available products</a> or you can try a different range.`);
     } else {
         await showProducts(results,
-            `✨ Here are the best <strong>${SESSION.pendingCategory}</strong> picks for <strong>${budgetTxt}</strong>:`);
+            `✨ I found **${results.length}** ${SESSION.pendingCategory} for you in the **$${minBudget}-$${maxBudget}** range:`);
         showChips(['🛒 View Cart', '🔍 Search Again', '🤝 Talk to Agent'], handleChip);
     }
 }
@@ -781,24 +1067,72 @@ async function handleBudget(budgetTxt) {
 // ═══════════════════════════════════════════════════════════════
 
 const INTENTS = [
-    // Greetings
-    { match: /\b(hello|hi+|hey|howdy|greetings|good (morning|afternoon|evening)|anyone there|help me|start)\b/i,
+    // Greetings & Casual Start
+    { match: /\b(hello|hi+|hey|howdy|greetings|good (morning|afternoon|evening)|anyone there|start)\b/i,
       reply: async () => {
           const hour = new Date().getHours();
           const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+          const userName = getUserName();
+          const namePart = userName ? `, <strong>${userName}</strong>` : '';
           await botReplies(
-              `${greet}! 👋 Welcome to <strong>TechCity</strong> — Zimbabwe's premier tech store.`,
-              `I'm <strong>Tech City Assistant</strong>, your personal tech help. I can find products, compare specs, and check delivery for you.`
+              `${greet}${namePart}! 👋 Welcome to <strong>TechCity</strong>. How can I help you today?`,
+              `I'm here to chat about anything tech — from picking the right laptop to checking your order status.`
           );
-          showChips(['🛍 Browse Products', '💻 Laptop Guide', '📱 Phone Guide', '🛒 My Cart'], handleChip);
+      }},
+
+    // Small Talk: How are you?
+    { match: /\b(how are you|how (i)?s it going|how (r|are) (u|you)|u (ok|good))\b/i,
+      reply: async () => {
+          await botReply("I'm doing great, thank you for asking! 😊 Just here and ready to help you find some awesome tech. How are you doing today?");
+      }},
+
+    // Small Talk: What's your name? / Who are you?
+    { match: /\b(what is your name|who are you|your name|what (do i|should i) call you)\b/i,
+      reply: async () => {
+          await botReply("I'm the **TechCity Assistant**! 🤖 You can think of me as your personal tech guide here at the store.");
+      }},
+
+    // Small Talk: Who created you?
+    { match: /\b(who (made|created|built) you|your creator|who is your boss)\b/i,
+      reply: async () => {
+          await botReply("I was built by the talented team at **TechCity** to make your shopping experience as smooth as possible! 🚀");
+      }},
+
+    // Small Talk: Compliments
+    { match: /\b(you are (cool|smart|great|awesome|good|helpful)|nice bot|good job|well done)\b/i,
+      reply: async () => {
+          await botReply("That's so kind of you! I'm blushing (if a robot could blush)! 😊 I'm just happy to be of service.");
+      }},
+
+    // Small Talk: Jokes
+    { match: /\b(tell me a joke|joke|laugh)\b/i,
+      reply: async () => {
+          const jokes = [
+              "Why did the computer show up late to work? It had a hard drive! 🚗",
+              "Why was the cell phone wearing glasses? Because it lost its contacts! 👓",
+              "How many programmers does it take to change a light bulb? None, that's a hardware problem! 💡",
+              "What do you call a computer that sings? A Dell! 🎤"
+          ];
+          await botReply(jokes[Math.floor(Math.random() * jokes.length)]);
+      }},
+
+    // General Help / What can you do?
+    { match: /\b(what can you do|help|commands|features|how (do i )?use this)\b/i,
+      reply: async () => {
+          await botReply(`I can help you with a lot of things! 🛠️<br><br>
+              • **Find Products**: Ask for "laptops between 200-500"<br>
+              • **Guides**: Type "laptop guide" or "phone guide"<br>
+              • **Orders**: Ask "where is my order"<br>
+              • **Info**: Ask about our "location", "hours", or "payment methods"<br>
+              • **Casual**: We can just chat about tech or I can tell you a joke!`);
       }},
 
     // Laptop Specific Guide
-    { match: /\b(laptop guide|recommend a laptop|which laptop|buying (a )?laptop)\b/i,
+    { match: /\b(laptop guide|recommend a laptop|which laptop (should|do)|buying (a )?laptop|suggest a laptop)\b/i,
       reply: () => startPurchaseAdvisor('laptops') },
 
     // Phone Specific Guide
-    { match: /\b(phone guide|recommend a phone|which phone|buying (a )?phone)\b/i,
+    { match: /\b(phone guide|recommend a phone|which phone (should|do)|buying (a )?phone|suggest a phone)\b/i,
       reply: () => startPurchaseAdvisor('smartphones') },
 
     // Products / Browse
@@ -808,27 +1142,70 @@ const INTENTS = [
           await botReply(categoriesCard());
       }},
 
-    // Laptops
-    { match: /\b(laptop|laptops?|notebook|macbook|chromebook)\b/i,
-      reply: () => startPurchaseAdvisor('laptops') },
+    // Laptops — show actual products from DB
+    { match: /\b(laptop|laptops|notebook|macbook|chromebook)\b/i,
+      reply: async () => {
+          await ensureProductsLoaded();
+          const results = searchProducts('laptops', 'laptops');
+          if (results.length > 0) {
+              await showProducts(results, `💻 Here are our <strong>laptops</strong>:`);
+              showChips(['🛒 My Cart', '💻 Laptop Guide', '🤝 Talk to Agent'], handleChip);
+          } else {
+              await botReply(`💻 We have great laptops! <a href="/Laptops/index.html" style="color:#1557b1;font-weight:600;">Browse Laptops →</a>`);
+          }
+      }},
 
-    // Smartphones
-    { match: /\b(phone|smartphone|mobile|iphone|samsung|tecno|infinix|redmi|xiaomi)\b/i,
-      reply: () => startPurchaseAdvisor('smartphones') },
+    // Smartphones — show actual products from DB
+    { match: /\b(phone|smartphone|mobile|iphone)\b/i,
+      reply: async () => {
+          await ensureProductsLoaded();
+          const results = searchProducts('smartphones', 'smartphones');
+          if (results.length > 0) {
+              await showProducts(results, `📱 Here are our <strong>smartphones</strong>:`);
+              showChips(['🛒 My Cart', '📱 Phone Guide', '🤝 Talk to Agent'], handleChip);
+          } else {
+              await botReply(`📱 We have great smartphones! <a href="/smartphones/index.html" style="color:#1557b1;font-weight:600;">Browse Smartphones →</a>`);
+          }
+      }},
 
-    // Accessories
-    { match: /\b(accessor(y|ies)|charger|earphone|headphone|keyboard|mouse|power ?bank|cable|case)\b/i,
-      reply: () => startPurchaseAdvisor('accessories') },
+    // Accessories — show actual products from DB
+    { match: /\b(accessor(y|ies)|charger|earphone|headphone|keyboard|mouse|power ?bank|cable)\b/i,
+      reply: async () => {
+          await ensureProductsLoaded();
+          const results = searchProducts('accessories', 'accessories');
+          if (results.length > 0) {
+              await showProducts(results, `🎧 Here are our <strong>accessories</strong>:`);
+              showChips(['🛒 My Cart', '🔍 Search Again', '🤝 Talk to Agent'], handleChip);
+          } else {
+              await botReply(`🎧 We have great accessories! <a href="/accessories/index.html" style="color:#1557b1;font-weight:600;">Browse Accessories →</a>`);
+          }
+      }},
 
-    // Printers
+    // Printers — show actual products from DB
     { match: /\b(printer|printing|scanner|ink)\b/i,
-      reply: () => startPurchaseAdvisor('printers') },
+      reply: async () => {
+          await ensureProductsLoaded();
+          const results = searchProducts('printers', 'printers');
+          if (results.length > 0) {
+              await showProducts(results, `🖨️ Here are our <strong>printers</strong>:`);
+              showChips(['🛒 My Cart', '🔍 Search Again', '🤝 Talk to Agent'], handleChip);
+          } else {
+              await botReply(`🖨️ We have great printers! <a href="/printers/index.html" style="color:#1557b1;font-weight:600;">Browse Printers →</a>`);
+          }
+      }},
 
     // Bags
     { match: /\b(bag|satchel|backpack|laptop bag)\b/i,
       reply: async () => {
-          await botReply(`🎒 We carry quality laptop bags and satchels.<br>
-              <a href="/bags/bags.html" style="color:#1557b1;font-weight:600;">Browse Bags →</a>`);
+          await ensureProductsLoaded();
+          const results = searchProducts('bags', 'bags');
+          if (results.length > 0) {
+              await showProducts(results, `🎒 Here are our <strong>bags</strong>:`);
+              showChips(['🛒 My Cart', '🔍 Search Again', '🤝 Talk to Agent'], handleChip);
+          } else {
+              await botReply(`🎒 We carry quality laptop bags and satchels.<br>
+                  <a href="/bags/bags.html" style="color:#1557b1;font-weight:600;">Browse Bags →</a>`);
+          }
       }},
 
     // Price / Budget
@@ -969,6 +1346,20 @@ const INTENTS = [
               hour:'2-digit', minute:'2-digit'
           })}`);
       }},
+
+    // Search Again
+    { match: /\b(search again|another search)\b/i,
+      reply: async () => {
+          await botReply("What would you like to search for? 🔍");
+          showChips(['💻 Laptops', '📱 Smartphones', '🎧 Accessories', '🖨️ Printers'], handleChip);
+      }},
+
+    // View Cart
+    { match: /\b(view cart|my cart|show cart)\b/i,
+      reply: async () => {
+          await botReply(cartSummaryText());
+          showChips(['🗑 Clear Cart', '🛍 Keep Shopping', '✅ Checkout'], handleChip);
+      }},
 ];
 
 // ── Rich card builders ────────────────────────────────────────
@@ -1044,12 +1435,19 @@ function contactCard() {
 
 async function getBotResponse(raw) {
     const text = raw.trim();
+    const cleanText = text.replace(/[^\x00-\x7F]/g, "").trim();
 
-    // Guided flow continuation
-    if (SESSION.step === 'use_case') { await handleUseCase(text); return; }
-    if (SESSION.step === 'budget')   { await handleBudget(text); return; }
+    // High-priority intents that must bypass guided flows (e.g. Talk to Agent, Checkout, Cart)
+    const isGlobalIntent = /^(agent|human|person|staff|support|help me|assist|checkout|clear cart|my cart|cart)$/i.test(cleanText)
+        || /\b(agent|support|human|staff|whatsapp|phone|checkout|chat with agent|talk to agent|speak to agent)\b/i.test(cleanText);
 
-    // Cart commands
+    if (!isGlobalIntent) {
+        // Guided flow continuation
+        if (SESSION.step === 'use_case') { await handleUseCase(text); return; }
+        if (SESSION.step === 'budget')   { await handleBudget(text); return; }
+    }
+
+    // Cart commands (exact)
     if (/^clear cart$/i.test(text)) {
         localStorage.setItem('cart', JSON.stringify([]));
         await botReply('🗑️ Your cart has been cleared.');
@@ -1060,30 +1458,87 @@ async function getBotResponse(raw) {
         return;
     }
 
-    // Budget shorthand: "under $500", "$300 budget", etc.
-    const budgetMatch = text.match(/\$?\s*(\d+)/);
-    if (budgetMatch && SESSION.pendingCategory) {
-        await handleBudget(`Under $${budgetMatch[1]}`);
-        return;
+    // ── 1. Try to extract a structured product query ──
+    const pq = extractProductQuery(text);
+
+    // ── 2. Handle explicit price range + optional category ──
+    if (pq && (pq.minPrice > 0 || pq.maxPrice < Infinity)) {
+        if (pq.category) {
+            SESSION.pendingCategory = pq.category;
+            await handleBudget(`${pq.minPrice}-${pq.maxPrice}`, pq.minPrice, pq.maxPrice);
+            return;
+        } else if (SESSION.pendingCategory) {
+            await handleBudget(`${pq.minPrice}-${pq.maxPrice}`, pq.minPrice, pq.maxPrice);
+            return;
+        } else {
+            // Have a price range but no category — ask
+            SESSION.pendingMin = pq.minPrice;
+            SESSION.pendingMax = pq.maxPrice;
+            await botReply(`I can help you find something in the **$${pq.minPrice}${pq.maxPrice < Infinity ? '–$' + pq.maxPrice : '+'}** range. 🛍️<br>What type of product are you looking for?`);
+            showChips(['💻 Laptops', '📱 Smartphones', '🖨️ Printers', '🎧 Accessories'], (choice) => {
+                const cat = choice.replace(/[^\x00-\x7F]/g, "").trim().toLowerCase();
+                SESSION.pendingCategory = resolveCategory(cat) || cat;
+                handleBudget(`${SESSION.pendingMin}-${SESSION.pendingMax}`, SESSION.pendingMin, SESSION.pendingMax);
+            });
+            return;
+        }
     }
 
-    // Intent matching
+    // ── 3. Direct product search — check if the query matches actual products ──
+    // Only skip for pure greeting/smalltalk/meta intents
+    const isSmallTalk = /^(hi+|hey|hello|howdy|greetings|good\s+(morning|afternoon|evening)|bye|goodbye|see you|later|thank(s| you)|thx|ty|how are you|what can you do|help|who are you|your name|tell me a joke|joke)$/i.test(cleanText)
+        || /\b(guide|recommend|suggest|which .+ should|buying a)\b/i.test(cleanText);
+
+    if (!isSmallTalk && pq && pq.hasProductIntent) {
+        await ensureProductsLoaded();
+        const results = searchProducts(pq.searchTerms || text, pq.category);
+
+        if (results.length > 0) {
+            // Apply price filter if present
+            let filtered = results;
+            if (pq.minPrice > 0 || pq.maxPrice < Infinity) {
+                filtered = results.filter(p => {
+                    const price = parseFloat(String(p.price).replace(/[^0-9.]/g, ''));
+                    return !isNaN(price) && price >= pq.minPrice && price <= pq.maxPrice;
+                });
+            }
+
+            if (filtered.length > 0) {
+                const catLabel = pq.category ? ` ${pq.category}` : '';
+                await showProducts(filtered, `🔍 I found <strong>${filtered.length}</strong>${catLabel} matching "<strong>${escHtml(text)}</strong>":`);
+                showChips(['🛒 My Cart', '🔍 Search Again', '🤝 Talk to Agent'], handleChip);
+                return;
+            }
+        }
+
+        // Product intent detected but no results — tell them specifically
+        if (pq.category || pq.searchTerms) {
+            const catLabel = pq.category || 'products';
+            await botReply(`😕 I couldn't find any <strong>${catLabel}</strong> matching "<strong>${escHtml(pq.searchTerms || text)}</strong>" right now.<br>
+                You can <a href="/shop/index.html" style="color:#1557b1;font-weight:600;">browse all products</a> or try a different search term.`);
+            showChips(['🛍 Browse Products', '💻 Laptop Guide', '📱 Phone Guide', '🤝 Talk to Agent'], handleChip);
+            return;
+        }
+    }
+
+    // ── 4. Intent matching for non-product queries (greetings, info, etc.) ──
     for (const intent of INTENTS) {
-        if (intent.match.test(text)) {
+        if (intent.match.test(text) || intent.match.test(cleanText)) {
             await intent.reply();
             return;
         }
     }
 
-    // Fallback: product search
-    const found = searchProducts(text);
-    if (found.length) {
-        await showProducts(found, `🔍 Here's what I found for "<strong>${escHtml(text)}</strong>":`);
+    // ── 5. Fallback: broad product search (no structured query detected) ──
+    await ensureProductsLoaded();
+    const fallbackResults = searchProducts(text);
+    if (fallbackResults.length) {
+        await showProducts(fallbackResults, `🔍 Here's what I found for "<strong>${escHtml(text)}</strong>":`);
         showChips(['🛒 My Cart', '💼 Get a Recommendation', '🤝 Talk to Agent'], handleChip);
         return;
     }
 
-    // Smart fallback
+    // ── 6. Smart fallback ──
     await botReply(`🤔 I'm not sure I understood that. Here's how I can help:`);
     showChips(['🛍 Browse Products', '💰 Check Prices', '📞 Contact Us', '🛒 My Cart', '🤝 Talk to Agent'], handleChip);
 }
@@ -1103,6 +1558,10 @@ async function sendMessage() {
     if (!text) return;
     userInputEl.value = '';
     showUserMsg(text);
+    
+    // Ensure products are ready for search
+    await ensureProductsLoaded();
+    
     await getBotResponse(text);
 }
 
@@ -1123,6 +1582,10 @@ document.addEventListener('click', e => {
     if (chatbox && chatbox.classList.contains('active')) {
         // If the click is outside the chatbox and outside the chatbot toggle button
         if (!chatbox.contains(e.target) && (!chatbotButton || !chatbotButton.contains(e.target))) {
+            // DETACHED ELEMENT FIX: If the element is no longer in the document, 
+            // it likely was a chip that got removed on click. Don't close.
+            if (!document.body.contains(e.target)) return;
+
             // Also ignore clicks on the file input, emoji picker, or other overlays
             const isOverlay = e.target.closest('.media-overlay') || 
                               e.target.closest('div[style*="z-index:9999"]'); // simple check for emoji picker

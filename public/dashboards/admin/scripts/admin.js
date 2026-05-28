@@ -37,7 +37,7 @@ function guardAdmin() {
     const token = localStorage.getItem('techcity_token');
     const user  = JSON.parse(localStorage.getItem('techcity_user') || '{}');
     if (!token || user.role !== 'admin') {
-        window.location.href = '/login/index.html';
+        window.location.href = '../../login/index.html';
         return;
     }
     const nameEl = document.getElementById('admin-name');
@@ -57,14 +57,19 @@ async function fetchUsers() {
         const res = await fetch(`${API}/admin/users-full`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (!res.ok) throw new Error('API error ' + res.status);
+        if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+                return logout();
+            }
+            throw new Error('API error ' + res.status);
+        }
         allUsers = await res.json();
 
-        renderOverview(allUsers);
-        filterUsers(); // Use filterUsers instead of renderUsersGrid to respect any active search
-        renderCartsTable(allUsers);
-        renderWishlistsTable(allUsers);
-        updateStats(allUsers);
+        try { renderOverview(allUsers); } catch(e) { console.error('Overview error:', e); }
+        try { filterUsers(); } catch(e) { console.error('Grid error:', e); }
+        try { renderCartsTable(allUsers); } catch(e) { console.error('Carts error:', e); }
+        try { renderWishlistsTable(allUsers); } catch(e) { console.error('Wishlists error:', e); }
+        try { updateStats(allUsers); } catch(e) { console.error('Stats error:', e); }
 
         const el = document.getElementById('last-refresh');
         if (el) el.textContent = 'Updated ' + new Date().toLocaleTimeString();
@@ -189,7 +194,7 @@ function userCard(u) {
           }
           <h4 style="margin-top:12px;"><i class="fas fa-heart"></i> Wishlist</h4>
           ${wishlist.length
-            ? wishlist.map(i => `<div class="detail-item"><span>${esc(i.name || i.id)}</span><span>$${(i.price||0).toFixed(2)}</span></div>`).join('') +
+            ? wishlist.map(i => `<div class="detail-item"><span>${esc(i.name || i.id)}</span><span>$${parseFloat(i.price||0).toFixed(2)}</span></div>`).join('') +
               `<div class="detail-item" style="font-weight:700; color:var(--danger); border-top:1px solid var(--border-color, #e5e7eb); margin-top:4px;"><span>Total Wishlist Items</span><span>${wishlist.length} items</span></div>`
             : '<p class="empty-detail">Wishlist is empty.</p>'
           }
@@ -258,7 +263,12 @@ async function fetchOrders() {
         const res = await fetch(`${API}/orders/admin/all`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (!res.ok) throw new Error('API error ' + res.status);
+        if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+                return logout();
+            }
+            throw new Error('API error ' + res.status);
+        }
         allOrders = await res.json();
         renderOrdersTable(allOrders);
     } catch (err) {
@@ -424,7 +434,7 @@ function logout() {
         localStorage.removeItem('techcity_token');
         localStorage.removeItem('techcity_user');
     }
-    window.location.href = '/login/index.html';
+    window.location.href = '../../login/index.html';
 }
 
 function showToast(msg, type = 'info') {
