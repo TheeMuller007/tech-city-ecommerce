@@ -202,19 +202,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const token = localStorage.getItem('techcity_token');
         const userData = JSON.parse(localStorage.getItem('techcity_user'));
         const headerActions = document.querySelector('.header-actions');
+        const mainNav = document.getElementById('mainNav');
         
-        if (token && headerActions) {
-            // Change login/register buttons to personalized dashboard link
-            const loginBtn = document.querySelector('a[href="/login/index.html"], a[href="../login/index.html"], a[href="../../login/index.html"]');
-            const registerBtn = document.querySelector('a[href="/register/index.html"], a[href="../register/index.html"], a[href="../../register/index.html"]');
-            
-            if (loginBtn && userData) {
-                // Determine dashboard path based on role and current page depth
+        // Remove existing mobile auth elements to prevent duplication
+        if (mainNav) {
+            mainNav.querySelectorAll('.mobile-nav-auth, .mobile-nav-user-info').forEach(el => el.remove());
+        }
+        
+        if (token) {
+            // Logged in UI for Desktop
+            if (headerActions && userData) {
+                const loginBtn = document.querySelector('a[href="/login/index.html"], a[href="../login/index.html"], a[href="../../login/index.html"]');
+                const registerBtn = document.querySelector('a[href="/register/index.html"], a[href="../register/index.html"], a[href="../../register/index.html"]');
+                
                 const dashPath = userData.role === 'admin' ? '/dashboards/admin/index.html' : '/dashboards/user/index.html';
                 
-                loginBtn.innerHTML = `<i class="fas fa-user-circle"></i> Welcome, ${userData.username}`;
-                loginBtn.href = dashPath;
-                loginBtn.classList.add('user-welcome-link');
+                if (loginBtn) {
+                    loginBtn.innerHTML = `<i class="fas fa-user-circle"></i> Welcome, ${userData.username}`;
+                    loginBtn.href = dashPath;
+                    loginBtn.classList.add('user-welcome-link');
+                }
                 
                 if (registerBtn) {
                     registerBtn.textContent = 'Logout';
@@ -225,6 +232,57 @@ document.addEventListener('DOMContentLoaded', () => {
                         window.location.href = '/index.html';
                     };
                 }
+            }
+            
+            // Logged in UI for Mobile Drawer
+            if (mainNav && userData) {
+                const dashPath = userData.role === 'admin' ? '/dashboards/admin/index.html' : '/dashboards/user/index.html';
+                
+                // User info block
+                const userInfo = document.createElement('div');
+                userInfo.className = 'mobile-nav-user-info';
+                userInfo.innerHTML = `
+                    <i class="fas fa-user-circle"></i>
+                    <div class="mobile-nav-user-details">
+                        <span class="mobile-nav-username">Welcome, ${userData.username}</span>
+                        <span class="mobile-nav-user-role">${userData.role}</span>
+                    </div>
+                `;
+                mainNav.appendChild(userInfo);
+                
+                // Dashboard link
+                const dashLink = document.createElement('a');
+                dashLink.href = dashPath;
+                dashLink.className = 'nav-link mobile-nav-auth mobile-nav-auth-login';
+                dashLink.innerHTML = '<i class="fas fa-tachometer-alt" style="margin-right: 8px;"></i> Dashboard';
+                mainNav.appendChild(dashLink);
+                
+                // Logout link
+                const logoutLink = document.createElement('a');
+                logoutLink.href = '#';
+                logoutLink.className = 'nav-link mobile-nav-auth mobile-nav-auth-logout';
+                logoutLink.innerHTML = '<i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i> Logout';
+                logoutLink.onclick = (e) => {
+                    e.preventDefault();
+                    performLogout();
+                    window.location.href = '/index.html';
+                };
+                mainNav.appendChild(logoutLink);
+            }
+        } else {
+            // Guest UI for Mobile Drawer
+            if (mainNav) {
+                const loginLink = document.createElement('a');
+                loginLink.href = '/login/index.html';
+                loginLink.className = 'nav-link mobile-nav-auth mobile-nav-auth-login';
+                loginLink.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right: 8px;"></i> Login';
+                mainNav.appendChild(loginLink);
+                
+                const registerLink = document.createElement('a');
+                registerLink.href = '/register/index.html';
+                registerLink.className = 'nav-link mobile-nav-auth mobile-nav-auth-register';
+                registerLink.innerHTML = '<i class="fas fa-user-plus" style="margin-right: 8px;"></i> Register';
+                mainNav.appendChild(registerLink);
             }
         }
     };

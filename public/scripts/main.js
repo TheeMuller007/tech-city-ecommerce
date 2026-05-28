@@ -1,10 +1,61 @@
 // Main JavaScript - Search & Cart Initializer
 console.log('[main.js] Script parsed and running v8');
 
-// Mobile menu toggle
-document.getElementById('mobileMenuBtn')?.addEventListener('click', function() {
+// Mobile menu toggle - High-End Sliding Drawer Implementation
+document.addEventListener('DOMContentLoaded', () => {
     const nav = document.getElementById('mainNav');
-    nav.classList.toggle('active');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    
+    if (nav && mobileMenuBtn) {
+        // 1. Inject Backdrop if not already present
+        let backdrop = document.querySelector('.nav-backdrop');
+        if (!backdrop) {
+            backdrop = document.createElement('div');
+            backdrop.className = 'nav-backdrop';
+            document.body.appendChild(backdrop);
+        }
+
+        // 2. Inject Close Button inside Drawer Header if not already present
+        if (!nav.querySelector('.nav-drawer-header')) {
+            const drawerHeader = document.createElement('div');
+            drawerHeader.className = 'nav-drawer-header';
+            drawerHeader.innerHTML = `
+                <span style="font-weight: 800; font-family: var(--font-serif); font-size: 1.25rem; color: var(--primary);">TECH CITY</span>
+                <button class="nav-drawer-close" id="navDrawerClose" aria-label="Close menu">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            `;
+            nav.insertBefore(drawerHeader, nav.firstChild);
+        }
+
+        const closeBtn = document.getElementById('navDrawerClose');
+
+        // Toggle Drawer Function
+        const openDrawer = () => {
+            nav.classList.add('active');
+            backdrop.classList.add('active');
+            document.body.classList.add('mobile-nav-open');
+        };
+
+        const closeDrawer = () => {
+            nav.classList.remove('active');
+            backdrop.classList.remove('active');
+            document.body.classList.remove('mobile-nav-open');
+        };
+
+        // Event Listeners
+        mobileMenuBtn.addEventListener('click', openDrawer);
+        closeBtn?.addEventListener('click', closeDrawer);
+        backdrop.addEventListener('click', closeDrawer);
+
+        // Auto-close drawer on navigation click (smooth UX)
+        nav.querySelectorAll('.nav-link:not(.mobile-nav-auth-logout)').forEach(link => {
+            link.addEventListener('click', closeDrawer);
+        });
+    }
 });
 
 // Cart drawer
@@ -167,25 +218,7 @@ document.querySelectorAll('.nav-link').forEach(link => {
     }
 });
 
-// Add CSS for mobile menu
-const style = document.createElement('style');
-style.textContent = `
-    @media (max-width: 767px) {
-        .nav.active {
-            display: flex;
-            flex-direction: column;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: var(--background);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem;
-            box-shadow: var(--shadow-lg);
-        }
-    }
-`;
-document.head.appendChild(style);
+// Legacy CSS injection removed to prevent styling conflicts with main.css mobile drawer rules.
 
 
 
