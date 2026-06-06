@@ -17,7 +17,6 @@ function esc(str) {
 document.addEventListener('DOMContentLoaded', () => {
     guardAdmin();
     initTheme();
-    initSidebarToggle();
     fetchUsers();
     fetchOrders();
     fetchProductsAdmin();
@@ -339,7 +338,7 @@ function filterUsers() {
 // ─── Section Switcher ────────────────────────
 function switchSection(section, el) {
     document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.sidebar-nav .nav-item').forEach(n => n.classList.remove('active'));
 
     const target = document.getElementById('section-' + section);
     if (target) target.classList.add('active');
@@ -348,7 +347,22 @@ function switchSection(section, el) {
     const titles = { overview:'Admin Overview', users:'All Users', carts:'Cart Activity', wishlists:'Wishlists', orders:'Order Management', products:'Product Management' };
     const pt = document.getElementById('page-title');
     if (pt) pt.textContent = titles[section] || section;
+
+    if (window.syncDashboardTab) window.syncDashboardTab(section);
+    if (window.closeDashboardSidebar) window.closeDashboardSidebar();
+    if (window.scrollDashboardToTop) window.scrollDashboardToTop();
+
+    if (section === 'products' && typeof fetchProductsAdmin === 'function') {
+        fetchProductsAdmin();
+    }
 }
+
+document.addEventListener('dashboard:navigate', (e) => {
+    const { section } = e.detail;
+    if (section === 'menu') return;
+    const nav = document.querySelector(`.sidebar-nav .nav-item[data-section="${section}"]`);
+    switchSection(section, nav);
+});
 
 // ─── Delete User ─────────────────────────────
 async function deleteUser(userId, username) {
@@ -459,13 +473,6 @@ function initTheme() {
         document.documentElement.setAttribute('data-theme', dark ? 'light' : 'dark');
         localStorage.setItem('theme', dark ? 'light' : 'dark');
         if (icon) icon.className = dark ? 'fas fa-moon' : 'fas fa-sun';
-    });
-}
-
-// ─── Sidebar Toggle ──────────────────────────
-function initSidebarToggle() {
-    document.getElementById('menuToggle')?.addEventListener('click', () => {
-        document.getElementById('sidebar')?.classList.toggle('show');
     });
 }
 

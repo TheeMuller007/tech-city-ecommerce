@@ -182,9 +182,54 @@ body {
 
 .theme-toggle-btn {
   background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 1.2rem;
+  .tab-item--menu {
+    color: var(--text-secondary);
+  }
+
+  /* ---------- Responsive admin tables (max-width: 1200px) ---------- */
+  @media (max-width: 1200px) {
+    /* Restrict overflow to allow scrolling only on small screens */
+    .admin-section .table-scroll {
+      overflow-x: auto !important;
+    }
+    /* Ensure table cells wrap content */
+    .admin-section th,
+    .admin-section td {
+      white-space: normal !important;
+    }
+    /* Allow table to shrink to container width */
+    .admin-section table {
+      min-width: 0 !important;
+      width: 100% !important;
+    }
+    /* Optional: stack rows on very narrow screens */
+    @media (max-width: 768px) {
+      .admin-section table, .admin-section thead, .admin-section tbody, .admin-section th, .admin-section td, .admin-section tr {
+        display: block !important;
+      }
+      .admin-section th {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+      }
+      .admin-section td {
+        padding-left: 50%;
+        text-align: left;
+        position: relative;
+      }
+      .admin-section td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        width: calc(50% - 20px);
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+font-size: 1.2rem;
   cursor: pointer;
   transition: color 0.2s ease;
 }
@@ -346,8 +391,41 @@ th {
   letter-spacing: 0.5px;
 }
 
+
 td {
-  font-size: 0.95rem;
+    font-size: 0.95rem;
+}
+
+/* Image sizing for product thumbnails in dashboard tables */
+.table-container img {
+    width: 48px !important;
+    height: 48px !important;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+/* Ensure table cells align content nicely for product rows */
+.table-container td {
+    /* generic table cell styling (no flex to avoid breaking other tables) */
+    vertical-align: middle;
+}
+
+/* Product list cell specific styling */
+.table-container td .m-list-product {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.table-container td .m-list-product img {
+    width: 48px !important;
+    height: 48px !important;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-right: 8px;
+    vertical-align: middle;
 }
 
 tbody tr {
@@ -517,3 +595,9 @@ tbody tr:hover {
 
 .logo-icon { width: 120px !important; height: 48px !important; border-radius: 24px !important; border: none !important; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important; transition: transform 0.3s, box-shadow 0.3s; margin: 0 !important; }
 .logo-icon:hover { transform: scale(1.05); box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important; }
+
+/* Mobile-only UI (tab bar, backdrop) — hidden on desktop; styled in dashboard-mobile.css */
+.app-tab-bar,
+.sidebar-backdrop {
+  display: none;
+}

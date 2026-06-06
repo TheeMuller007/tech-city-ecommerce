@@ -1,4 +1,4 @@
-﻿    <!DOCTYPE html>
+    <!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
@@ -10,25 +10,8 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
         <link rel="stylesheet" href="/styles/main.css">
         <link rel="stylesheet" href="/login/styles/styles.css">
+        <link rel="stylesheet" href="/styles/mobile.css?v=13" media="(max-width: 767px)">
     </head>
-
-    <style>
-    /* Removed broken <body> tag */
-    @media (max-width: 767px) {
-        .nav.active {
-            display: flex;
-            flex-direction: column;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: var(--background);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem;
-            box-shadow: var(--shadow-lg);
-        }
-    }
-    </style>
 
     <body>
 <!-- Header -->
@@ -45,6 +28,10 @@
                 <a href="/shop/index.html" class="nav-link">Shop</a>
                 <a href="/about/about.html" class="nav-link">About</a>
                 <a href="/contact/contact.html" class="nav-link">Contact</a>
+                <div class="nav-auth-mobile">
+                    <a href="/login/index.html" class="nav-link">Login</a>
+                    <a href="/register/index.html" class="nav-link">Register</a>
+                </div>
             </nav>
             
             <div class="header-actions">
@@ -231,7 +218,8 @@
 
         <script src="/scripts/products.js"></script>
         <script src="/scripts/cart.js"></script>
-        <script src="/scripts/search.js"></script>`n    <script src="/scripts/main.js"></script>
+        <script src="/scripts/search.js"></script>
+        <script src="/scripts/main.js"></script>
         <script src="/scripts/bot.js"></script>
         <script src="/scripts/auth.js"></script>
 
@@ -265,7 +253,7 @@
         {
             img: 'images/bck.jpg',
             title: 'Our Commitment',
-            text: 'By refurbishing devices and promoting repair over disposal, weâ€™re helping reduce e-waste and building a more sustainable tech ecosystem.'
+            text: 'By refurbishing devices and promoting repair over disposal, we’re helping reduce e-waste and building a more sustainable tech ecosystem.'
         }
     ];
 
@@ -560,24 +548,9 @@
         }
     });
 
-    // Add CSS for mobile menu
+    // Add CSS for search bar (mobile nav handled by /styles/mobile.css)
     const style = document.createElement('style');
     style.textContent = `
-        @media (max-width: 767px) {
-            .nav.active {
-                display: flex;
-                flex-direction: column;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background: var(--background);
-                border-bottom: 1px solid var(--border);
-                padding: 1rem;
-                box-shadow: var(--shadow-lg);
-            }
-        }
-        
         .search-bar {
             display: flex;
             gap: 0.5rem;
@@ -690,7 +663,7 @@
     function renderStars(rating) {
         let stars = '';
         for (let i = 1; i <= 5; i++) {
-            stars += `<span class="${i <= rating ? 'star-filled' : 'star-empty'}">â˜…</span>`;
+            stars += `<span class="${i <= rating ? 'star-filled' : 'star-empty'}">★</span>`;
         }
         return stars;
     }

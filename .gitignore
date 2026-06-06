@@ -1,5 +1,7 @@
 node_modules/
 .env
+firebase-config.js
+**/firebase-config.js
 .gemini/
 *.log
 npm-debug.log*

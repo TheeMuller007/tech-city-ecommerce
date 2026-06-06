@@ -1,16 +1,26 @@
+function escHtml(str) {
+    return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+function productListCell(name, image, label) {
+    const src = image && image !== 'undefined' ? image : '../../images/techcity1.jpg';
+    return `<td data-label="${label}" class="cell-product">
+        <div class="m-list-product">
+            <img src="${escHtml(src)}" alt="">
+            <span class="m-list-product-name">${escHtml(name)}</span>
+        </div>
+    </td>`;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     
     // Elements
     const themeToggleBtn = document.getElementById('themeToggle');
     const themeIcon = themeToggleBtn.querySelector('i');
-    const menuToggle = document.getElementById('menuToggle');
-    const sidebar = document.getElementById('sidebar');
-
-    // Sidebar Toggle
-    menuToggle.addEventListener('click', () => {
-        sidebar.classList.toggle('show');
-    });
-
     // Theme logic - Check local storage or system preference
     const currentTheme = localStorage.getItem('theme') || 'light';
     
@@ -65,38 +75,54 @@ document.addEventListener('DOMContentLoaded', () => {
     const sections = document.querySelectorAll('.dashboard-section');
     const pageTitle = document.querySelector('.page-title');
 
+    function navigateToSection(targetSection, activeNavItem) {
+        if (!targetSection) return;
+
+        navItems.forEach(nav => nav.classList.remove('active'));
+        if (activeNavItem) activeNavItem.classList.add('active');
+
+        sections.forEach(section => {
+            section.classList.remove('active');
+            if (section.id === `${targetSection}-section`) {
+                section.classList.add('active');
+            }
+        });
+
+        const titles = {
+            profile: 'User Overview',
+            orders: 'My Orders',
+            wishlist: 'Wishlist',
+            wallet: 'Wallet',
+            support: 'Support',
+            settings: 'Settings',
+        };
+        pageTitle.textContent = activeNavItem
+            ? activeNavItem.textContent.trim()
+            : (titles[targetSection] || 'Dashboard');
+
+        if (targetSection === 'orders') renderAllOrders();
+        if (targetSection === 'wishlist') renderFullWishlist();
+        if (targetSection === 'wallet') renderWalletView();
+        if (targetSection === 'support') renderSupportView();
+        if (targetSection === 'settings') renderSettingsView();
+
+        if (window.syncDashboardTab) window.syncDashboardTab(targetSection);
+        if (window.closeDashboardSidebar) window.closeDashboardSidebar();
+        if (window.scrollDashboardToTop) window.scrollDashboardToTop();
+    }
+
     navItems.forEach(item => {
         item.addEventListener('click', (e) => {
             e.preventDefault();
-            const targetSection = item.dataset.section;
-
-            // Update Active Nav
-            navItems.forEach(nav => nav.classList.remove('active'));
-            item.classList.add('active');
-
-            // Update Section Visibility
-            sections.forEach(section => {
-                section.classList.remove('active');
-                if (section.id === `${targetSection}-section`) {
-                    section.classList.add('active');
-                }
-            });
-
-            // Update Title
-            pageTitle.textContent = item.textContent.trim();
-
-            // Refresh content if needed
-            if (targetSection === 'orders') renderAllOrders();
-            if (targetSection === 'wishlist') renderFullWishlist();
-            if (targetSection === 'wallet') renderWalletView();
-            if (targetSection === 'support') renderSupportView();
-            if (targetSection === 'settings') renderSettingsView();
-            
-            // Close sidebar on mobile
-            if (window.innerWidth <= 900) {
-                sidebar.classList.remove('show');
-            }
+            navigateToSection(item.dataset.section, item);
         });
+    });
+
+    document.addEventListener('dashboard:navigate', (e) => {
+        const { section } = e.detail;
+        if (section === 'menu') return;
+        const nav = document.querySelector(`.sidebar .nav-item[data-section="${section}"]`);
+        navigateToSection(section, nav);
     });
 
     // Real-time Dashboard Logic
@@ -245,20 +271,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const orders = await response.json();
 
             if (orders.length === 0) {
-                ordersTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-secondary);">No orders placed yet</td></tr>';
+                ordersTableBody.innerHTML = '<tr class="empty-row"><td colspan="5">No orders placed yet</td></tr>';
                 return;
             }
 
             const recentOrders = orders.slice(0, 5);
             ordersTableBody.innerHTML = recentOrders.map(order => `
-                <tr>
-                    <td>#ORD-${order.id}</td>
-                    <td>${new Date(order.created_at).toLocaleDateString()}</td>
-                    <td>$${parseFloat(order.total_price).toFixed(2)}</td>
-                    <td><span class="badge ${order.status.toLowerCase()}">${order.status}</span></td>
-                    <td>${order.status.toLowerCase() === 'pending'
-                        ? `<button onclick="cancelOrder(${order.id})" style="padding:4px 10px;background:#ef4444;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:0.8rem;font-weight:600;"><i class="fas fa-times"></i> Cancel</button>`
-                        : `<span style="font-size:0.78rem;color:#94a3b8;">—</span>`
+                <tr class="m-data-row">
+                    <td data-label="Order ID">#ORD-${order.id}</td>
+                    <td data-label="Date">${new Date(order.created_at).toLocaleDateString()}</td>
+                    <td data-label="Total">$${parseFloat(order.total_price).toFixed(2)}</td>
+                    <td data-label="Status"><span class="badge ${order.status.toLowerCase()}">${escHtml(order.status)}</span></td>
+                    <td data-label="Action" class="cell-action">${order.status.toLowerCase() === 'pending'
+                        ? `<button type="button" class="btn btn-cancel-order" onclick="cancelOrder(${order.id})"><i class="fas fa-times"></i> Cancel</button>`
+                        : '<span class="m-muted">—</span>'
                     }</td>
                 </tr>
             `).join('');
@@ -314,21 +340,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!cartTableBody) return;
 
         if (cart.length === 0) {
-            cartTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-secondary);">Your cart is empty</td></tr>';
+            cartTableBody.innerHTML = '<tr class="empty-row"><td colspan="4">Your cart is empty</td></tr>';
             return;
         }
 
         cartTableBody.innerHTML = cart.map(item => `
-            <tr>
-                <td>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <img src="${item.image && item.image !== 'undefined' ? item.image : '../../images/techcity1.jpg'}" alt="${item.name}" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">
-                        <span>${item.name}</span>
-                    </div>
-                </td>
-                <td>$${parseFloat(item.price).toFixed(2)}</td>
-                <td>${item.quantity}</td>
-                <td>$${(parseFloat(item.price) * item.quantity).toFixed(2)}</td>
+            <tr class="m-data-row">
+                ${productListCell(item.name, item.image, 'Product')}
+                <td data-label="Price">$${parseFloat(item.price).toFixed(2)}</td>
+                <td data-label="Qty">${item.quantity}</td>
+                <td data-label="Subtotal">$${(parseFloat(item.price) * item.quantity).toFixed(2)}</td>
             </tr>
         `).join('');
     }
@@ -338,22 +359,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!wishlistTableBody) return;
 
         if (wishlist.length === 0) {
-            wishlistTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-secondary);">Your wishlist is empty</td></tr>';
+            wishlistTableBody.innerHTML = '<tr class="empty-row"><td colspan="4">Your wishlist is empty</td></tr>';
             return;
         }
 
         wishlistTableBody.innerHTML = wishlist.slice(0, 5).map(item => `
-            <tr>
-                <td>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <img src="${item.image && item.image !== 'undefined' ? item.image : '../../images/techcity1.jpg'}" alt="${item.name}" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">
-                        <span>${item.name}</span>
-                    </div>
-                </td>
-                <td>${item.category}</td>
-                <td>$${parseFloat(item.price).toFixed(2)}</td>
-                <td>
-                    <button class="btn btn-primary" onclick="removeFromWishlist('${item.id}')" style="padding: 4px 8px; font-size: 0.8rem; background: var(--danger);">Remove</button>
+            <tr class="m-data-row">
+                ${productListCell(item.name, item.image, 'Product')}
+                <td data-label="Category">${escHtml(item.category || '—')}</td>
+                <td data-label="Price">$${parseFloat(item.price).toFixed(2)}</td>
+                <td data-label="Action" class="cell-action">
+                    <button type="button" class="btn btn-remove-wishlist" onclick="removeFromWishlist('${String(item.id).replace(/'/g, "\\'")}')">Remove</button>
                 </td>
             </tr>
         `).join('');

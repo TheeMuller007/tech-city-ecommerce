@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -8,8 +8,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="../../styles/dashboard.css">
+  <link rel="stylesheet" href="../../styles/dashboard-mobile.css?v=13" media="(max-width: 767px)">
   <style>
-    /* â”€â”€ Admin-specific overrides â”€â”€ */
+    /* Ã¢â€â‚¬Ã¢â€â‚¬ Admin-specific overrides Ã¢â€â‚¬Ã¢â€â‚¬ */
     :root {
       --admin-accent: #6366f1;
       --admin-accent-glow: rgba(99,102,241,0.25);
@@ -150,6 +151,8 @@
   </style>
 </head>
 <body>
+  <div class="sidebar-backdrop" id="sidebarBackdrop" aria-hidden="true"></div>
+
   <div class="dashboard-container">
 
     <!-- Sidebar -->
@@ -197,7 +200,7 @@
         <div class="header-right">
           <div class="refresh-indicator">
             <div class="pulse-dot"></div>
-            <span id="last-refresh">Loadingâ€¦</span>
+            <span id="last-refresh">LoadingÃ¢â‚¬Â¦</span>
           </div>
           <button class="theme-toggle-btn" id="themeToggle" title="Toggle Dark/Light Mode">
             <i class="fas fa-moon"></i>
@@ -211,7 +214,7 @@
 
       <div class="content-area">
 
-        <!-- â”€â”€ OVERVIEW SECTION â”€â”€ -->
+        <!-- Ã¢â€â‚¬Ã¢â€â‚¬ OVERVIEW SECTION Ã¢â€â‚¬Ã¢â€â‚¬ -->
         <div id="section-overview" class="admin-section active">
           <div class="welcome-banner">
             <h1>Welcome back, <span id="admin-welcome-name">Admin</span>!</h1>
@@ -221,23 +224,23 @@
           <div class="stats-grid" id="stats-grid">
             <div class="stat-card">
               <div class="stat-icon primary"><i class="fas fa-users"></i></div>
-              <div class="stat-details"><h3>Total Users</h3><p id="stat-total-users">â€”</p></div>
+              <div class="stat-details"><h3>Total Users</h3><p id="stat-total-users">Ã¢â‚¬â€</p></div>
             </div>
             <div class="stat-card">
               <div class="stat-icon info"><i class="fas fa-shopping-cart"></i></div>
-              <div class="stat-details"><h3>Active Carts</h3><p id="stat-active-carts">â€”</p></div>
+              <div class="stat-details"><h3>Active Carts</h3><p id="stat-active-carts">Ã¢â‚¬â€</p></div>
             </div>
             <div class="stat-card">
               <div class="stat-icon danger"><i class="fas fa-heart"></i></div>
-              <div class="stat-details"><h3>Wishlist Items</h3><p id="stat-wishlist-items">â€”</p></div>
+              <div class="stat-details"><h3>Wishlist Items</h3><p id="stat-wishlist-items">Ã¢â‚¬â€</p></div>
             </div>
             <div class="stat-card">
               <div class="stat-icon success"><i class="fas fa-user-shield"></i></div>
-              <div class="stat-details"><h3>Admins</h3><p id="stat-admins">â€”</p></div>
+              <div class="stat-details"><h3>Admins</h3><p id="stat-admins">Ã¢â‚¬â€</p></div>
             </div>
             <div class="stat-card">
               <div class="stat-icon warning"><i class="fas fa-user-check"></i></div>
-              <div class="stat-details"><h3>With Profile Pic</h3><p id="stat-profile-pics">â€”</p></div>
+              <div class="stat-details"><h3>With Profile Pic</h3><p id="stat-profile-pics">Ã¢â‚¬â€</p></div>
             </div>
           </div>
 
@@ -247,7 +250,7 @@
               <h3>Registered Users</h3>
               <button class="btn btn-primary" onclick="switchSection('users', document.querySelector('[data-section=users]'))">View All</button>
             </div>
-            <div style="overflow-x:auto;">
+            <div class="table-scroll">
               <table id="overview-users-table">
                 <thead>
                   <tr>
@@ -256,86 +259,86 @@
                   </tr>
                 </thead>
                 <tbody id="overview-table-body">
-                  <tr><td colspan="7" style="text-align:center; padding:20px; color:#6b7280;">Loading usersâ€¦</td></tr>
+                  <tr><td colspan="7" style="text-align:center; padding:20px; color:#6b7280;">Loading usersÃ¢â‚¬Â¦</td></tr>
                 </tbody>
               </table>
             </div>
           </div>
         </div>
 
-        <!-- â”€â”€ ALL USERS SECTION â”€â”€ -->
+        <!-- Ã¢â€â‚¬Ã¢â€â‚¬ ALL USERS SECTION Ã¢â€â‚¬Ã¢â€â‚¬ -->
         <div id="section-users" class="admin-section">
           <div class="section-top">
             <h2><i class="fas fa-users" style="color:var(--admin-accent)"></i> All Users</h2>
             <div style="display:flex;gap:10px;align-items:center;">
-              <input type="search" id="user-search" class="search-input-admin" placeholder="Search usersâ€¦" oninput="filterUsers()">
+              <input type="search" id="user-search" class="search-input-admin" placeholder="Search usersÃ¢â‚¬Â¦" oninput="filterUsers()">
               <button class="btn btn-primary" onclick="fetchUsers()"><i class="fas fa-sync-alt"></i> Refresh</button>
             </div>
           </div>
           <div class="users-grid" id="users-grid">
-            <p style="color:#6b7280;">Loading usersâ€¦</p>
+            <p style="color:#6b7280;">Loading usersÃ¢â‚¬Â¦</p>
           </div>
         </div>
 
-        <!-- â”€â”€ CART ACTIVITY SECTION â”€â”€ -->
+        <!-- Ã¢â€â‚¬Ã¢â€â‚¬ CART ACTIVITY SECTION Ã¢â€â‚¬Ã¢â€â‚¬ -->
         <div id="section-carts" class="admin-section">
           <div class="section-top">
             <h2><i class="fas fa-shopping-cart" style="color:var(--info)"></i> Cart Activity</h2>
             <button class="btn btn-primary" onclick="fetchUsers()"><i class="fas fa-sync-alt"></i> Refresh</button>
           </div>
           <div class="table-container">
-            <div style="overflow-x:auto;">
+            <div class="table-scroll">
               <table>
                 <thead>
                   <tr><th>Avatar</th><th>User</th><th>Items in Cart</th><th>Cart Value</th><th>Top Item</th></tr>
                 </thead>
                 <tbody id="carts-table-body">
-                  <tr><td colspan="5" style="text-align:center;padding:20px;color:#6b7280;">Loadingâ€¦</td></tr>
+                  <tr><td colspan="5" style="text-align:center;padding:20px;color:#6b7280;">LoadingÃ¢â‚¬Â¦</td></tr>
                 </tbody>
               </table>
             </div>
           </div>
         </div>
 
-        <!-- â”€â”€ WISHLISTS SECTION â”€â”€ -->
+        <!-- Ã¢â€â‚¬Ã¢â€â‚¬ WISHLISTS SECTION Ã¢â€â‚¬Ã¢â€â‚¬ -->
         <div id="section-wishlists" class="admin-section">
           <div class="section-top">
             <h2><i class="fas fa-heart" style="color:var(--danger)"></i> Wishlists</h2>
             <button class="btn btn-primary" onclick="fetchUsers()"><i class="fas fa-sync-alt"></i> Refresh</button>
           </div>
           <div class="table-container">
-            <div style="overflow-x:auto;">
+            <div class="table-scroll">
               <table>
                 <thead>
                   <tr><th>Avatar</th><th>User</th><th>Wishlist Items</th><th>Top Wished</th></tr>
                 </thead>
                 <tbody id="wishlists-table-body">
-                  <tr><td colspan="4" style="text-align:center;padding:20px;color:#6b7280;">Loadingâ€¦</td></tr>
+                  <tr><td colspan="4" style="text-align:center;padding:20px;color:#6b7280;">LoadingÃ¢â‚¬Â¦</td></tr>
                 </tbody>
               </table>
             </div>
           </div>
         </div>
-        <!-- â”€â”€ ORDERS SECTION â”€â”€ -->
+        <!-- Ã¢â€â‚¬Ã¢â€â‚¬ ORDERS SECTION Ã¢â€â‚¬Ã¢â€â‚¬ -->
         <div id="section-orders" class="admin-section">
           <div class="section-top">
             <h2><i class="fas fa-box" style="color:var(--success)"></i> Order Management</h2>
             <button class="btn btn-primary" onclick="fetchOrders()"><i class="fas fa-sync-alt"></i> Refresh</button>
           </div>
           <div class="table-container">
-            <div style="overflow-x:auto;">
+            <div class="table-scroll">
               <table>
                 <thead>
                   <tr><th>Order ID</th><th>User</th><th>Total</th><th>Status</th><th>Date</th><th>Action</th></tr>
                 </thead>
                 <tbody id="orders-table-body">
-                  <tr><td colspan="6" style="text-align:center;padding:20px;color:#6b7280;">Loading ordersâ€¦</td></tr>
+                  <tr><td colspan="6" style="text-align:center;padding:20px;color:#6b7280;">Loading ordersÃ¢â‚¬Â¦</td></tr>
                 </tbody>
               </table>
             </div>
           </div>
         </div>
-        <!-- â”€â”€ PRODUCTS SECTION â”€â”€ -->
+        <!-- Ã¢â€â‚¬Ã¢â€â‚¬ PRODUCTS SECTION Ã¢â€â‚¬Ã¢â€â‚¬ -->
         <div id="section-products" class="admin-section">
           <div class="section-top">
             <h2><i class="fas fa-tag" style="color:var(--admin-accent)"></i> Product Management</h2>
@@ -356,13 +359,13 @@
             </select>
           </div>
           <div class="table-container">
-            <div style="overflow-x:auto;">
+            <div class="table-scroll">
               <table>
                 <thead>
                   <tr><th>ID</th><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Action</th></tr>
                 </thead>
                 <tbody id="products-table-body">
-                  <tr><td colspan="7" style="text-align:center;padding:20px;color:#6b7280;">Loading productsâ€¦</td></tr>
+                  <tr><td colspan="7" style="text-align:center;padding:20px;color:#6b7280;">Loading productsÃ¢â‚¬Â¦</td></tr>
                 </tbody>
               </table>
             </div>
@@ -459,14 +462,41 @@
     </div>
   </div>
 
+  <nav class="app-tab-bar" id="appTabBar" aria-label="Admin navigation">
+    <button type="button" class="tab-item active" data-section="overview" aria-label="Overview">
+      <i class="fas fa-chart-pie"></i>
+      <span>Home</span>
+    </button>
+    <button type="button" class="tab-item" data-section="orders" aria-label="Orders">
+      <i class="fas fa-box"></i>
+      <span>Orders</span>
+    </button>
+    <button type="button" class="tab-item" data-section="users" aria-label="Users">
+      <i class="fas fa-users"></i>
+      <span>Users</span>
+    </button>
+    <button type="button" class="tab-item" data-section="products" aria-label="Products">
+      <i class="fas fa-tag"></i>
+      <span>Products</span>
+    </button>
+    <button type="button" class="tab-item tab-item--menu" data-section="menu" aria-label="More">
+      <i class="fas fa-grip"></i>
+      <span>More</span>
+    </button>
+  </nav>
+
   <script src="../../scripts/auth.js"></script>
+  <script src="../dashboard-mobile.js"></script>
   <script src="./scripts/admin.js?v=5"></script>
 
 <a href="https://wa.me/263783187312" class="whatsapp-button" target="_blank" aria-label="Chat with us on WhatsApp">
     <i class="fab fa-whatsapp"></i>
 </a>
+
+    <script src="/scripts/bot.js"></script>
 </body>
 </html>
+
 
 
 

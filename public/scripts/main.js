@@ -2,10 +2,50 @@
 console.log('[main.js] Script parsed and running v8');
 
 // Mobile menu toggle
-document.getElementById('mobileMenuBtn')?.addEventListener('click', function() {
+(function() {
+    const menuBtn = document.getElementById('mobileMenuBtn');
     const nav = document.getElementById('mainNav');
-    nav.classList.toggle('active');
-});
+    
+    if (menuBtn && nav) {
+        // Toggle menu on hamburger click
+        menuBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            nav.classList.toggle('active');
+            menuBtn.classList.toggle('menu-open');
+            console.log('[Mobile Menu] Toggled:', nav.classList.contains('active'));
+        });
+
+        // Close menu when a nav link is clicked
+        nav.querySelectorAll('.nav-link').forEach(function(link) {
+            link.addEventListener('click', function() {
+                nav.classList.remove('active');
+                menuBtn.classList.remove('menu-open');
+            });
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (nav.classList.contains('active') && 
+                !nav.contains(e.target) && 
+                !menuBtn.contains(e.target)) {
+                nav.classList.remove('active');
+                menuBtn.classList.remove('menu-open');
+            }
+        });
+
+        // Close menu on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && nav.classList.contains('active')) {
+                nav.classList.remove('active');
+                menuBtn.classList.remove('menu-open');
+            }
+        });
+    } else {
+        console.warn('[Mobile Menu] mobileMenuBtn or mainNav not found');
+    }
+})();
+
 
 // Cart drawer
 document.getElementById('cartBtn')?.addEventListener('click', openCart);
@@ -167,27 +207,6 @@ document.querySelectorAll('.nav-link').forEach(link => {
     }
 });
 
-// Add CSS for mobile menu
-const style = document.createElement('style');
-style.textContent = `
-    @media (max-width: 767px) {
-        .nav.active {
-            display: flex;
-            flex-direction: column;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: var(--background);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem;
-            box-shadow: var(--shadow-lg);
-        }
-    }
-`;
-document.head.appendChild(style);
-
-
 
 
 
@@ -250,6 +269,16 @@ const preload = (url, type) => {
 
 preload("../images/bck 336.jpg", "image"); // your background
 preload("/fonts/poppins.woff2", "font");
+
+// Storefront mobile app shell (tab bar) — skip dashboards
+(function loadStoreMobileShell() {
+    if (window.location.pathname.includes('/dashboards/')) return;
+    if (document.querySelector('script[src*="store-mobile"]')) return;
+    const script = document.createElement('script');
+    script.src = '/scripts/store-mobile.js?v=1';
+    script.defer = true;
+    document.body.appendChild(script);
+})();
 
 
 

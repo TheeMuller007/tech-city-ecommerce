@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -15,8 +15,11 @@
   
   <!-- Styles -->
   <link rel="stylesheet" href="../../styles/dashboard.css">
+  <link rel="stylesheet" href="../../styles/dashboard-mobile.css?v=13" media="(max-width: 767px)">
 </head>
 <body>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop" aria-hidden="true"></div>
 
   <div class="dashboard-container">
     
@@ -115,19 +118,22 @@
             <h3>Recent Orders</h3>
             <a href="#" class="btn btn-primary">View History</a>
           </div>
-          <table>
-            <thead>
-              <tr>
-                <th>Order ID</th>
-                <th>Date</th>
-                <th>Total</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="recent-orders-tbody">
-              <!-- Dynamically populated -->
-            </tbody>
-          </table>
+          <div class="table-scroll table-scroll--stack">
+            <table class="mobile-stack-table" id="recent-orders-table">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Date</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="recent-orders-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
         </div>
         
         <!-- Cart & Wishlist Section -->
@@ -137,8 +143,8 @@
               <h3>Current Cart</h3>
               <a href="/shop/index.html" class="btn btn-primary">Go to Shop</a>
             </div>
-            <div style="overflow-x: auto;">
-              <table id="cart-table">
+            <div class="table-scroll table-scroll--stack">
+              <table id="cart-table" class="mobile-stack-table">
                 <thead>
                   <tr>
                     <th>Product</th>
@@ -159,8 +165,8 @@
               <h3>Your Wishlist</h3>
               <a href="/shop/index.html" class="btn btn-primary">Add More</a>
             </div>
-            <div style="overflow-x: auto;">
-              <table id="wishlist-table">
+            <div class="table-scroll table-scroll--stack">
+              <table id="wishlist-table" class="mobile-stack-table">
                 <thead>
                   <tr>
                     <th>Product</th>
@@ -175,6 +181,7 @@
               </table>
             </div>
           </div>
+        </div>
         </section>
 
         <!-- Orders Section -->
@@ -183,7 +190,7 @@
             <div class="table-header">
               <h3>All My Orders</h3>
             </div>
-            <div style="overflow-x: auto;">
+            <div class="table-scroll">
               <table>
                 <thead>
                   <tr>
@@ -208,7 +215,7 @@
               <h3>My Wishlist</h3>
               <a href="/shop/index.html" class="btn btn-primary">Add More</a>
             </div>
-            <div style="overflow-x: auto;">
+            <div class="table-scroll">
               <table id="wishlist-table-full">
                 <thead>
                   <tr>
@@ -246,19 +253,21 @@
               <div class="table-header">
                 <h3>Transaction History</h3>
               </div>
-              <table id="transactions-table">
-                <thead>
-                  <tr>
-                    <th>Type</th>
-                    <th>Amount</th>
-                    <th>Date</th>
-                    <th>Description</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <!-- Dynamically populated -->
-                </tbody>
-              </table>
+              <div class="table-scroll">
+                <table id="transactions-table">
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>Amount</th>
+                      <th>Date</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Dynamically populated -->
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </section>
@@ -289,18 +298,20 @@
               <div class="table-header">
                 <h3>My Support Tickets</h3>
               </div>
-              <table id="tickets-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Subject</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <!-- Dynamically populated -->
-                </tbody>
-              </table>
+              <div class="table-scroll">
+                <table id="tickets-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Subject</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Dynamically populated -->
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </section>
@@ -343,6 +354,7 @@
               <div class="table-header">
                 <h3>Profile Information</h3>
               </div>
+              <div style="padding: 20px;">
                 <div class="profile-preview">
                   <input type="file" id="profile-upload" hidden accept="image/*">
                   <div style="position: relative; display: inline-block;">
@@ -356,6 +368,7 @@
                 </div>
                 <button class="btn btn-secondary" id="profile-upload-btn" style="width: 100%; border: 1px solid var(--border-color); background: var(--sidebar-bg); color: var(--text-primary);">Change Profile Photo</button>
               </div>
+              </div>
             </div>
           </div>
         </section>
@@ -364,13 +377,40 @@
     </main>
   </div>
 
+  <nav class="app-tab-bar" id="appTabBar" aria-label="Dashboard navigation">
+    <button type="button" class="tab-item active" data-section="profile" aria-label="Home">
+      <i class="fas fa-house"></i>
+      <span>Home</span>
+    </button>
+    <button type="button" class="tab-item" data-section="orders" aria-label="Orders">
+      <i class="fas fa-box"></i>
+      <span>Orders</span>
+    </button>
+    <button type="button" class="tab-item" data-section="wallet" aria-label="Wallet">
+      <i class="fas fa-wallet"></i>
+      <span>Wallet</span>
+    </button>
+    <button type="button" class="tab-item" data-section="wishlist" aria-label="Wishlist">
+      <i class="fas fa-heart"></i>
+      <span>Saved</span>
+    </button>
+    <button type="button" class="tab-item tab-item--menu" data-section="menu" aria-label="More">
+      <i class="fas fa-grip"></i>
+      <span>More</span>
+    </button>
+  </nav>
+
   <script src="../../scripts/auth.js"></script>
+  <script src="../dashboard-mobile.js"></script>
   <script src="./scripts/user.js"></script>
 <a href="https://wa.me/263783187312" class="whatsapp-button" target="_blank" aria-label="Chat with us on WhatsApp">
     <i class="fab fa-whatsapp"></i>
 </a>
+
+    <script src="/scripts/bot.js"></script>
 </body>
 </html>
+
 
 
 
