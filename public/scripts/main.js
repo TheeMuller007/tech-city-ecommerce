@@ -1,65 +1,62 @@
 // Main JavaScript - Search & Cart Initializer
 console.log('[main.js] Script parsed and running v8');
 
-// Mobile menu toggle — wrapped in DOMContentLoaded to guarantee elements exist
-document.addEventListener('DOMContentLoaded', function() {
-    const menuBtn = document.getElementById('mobileMenuBtn');
+// Mobile menu toggle - High-End Sliding Drawer Implementation
+document.addEventListener('DOMContentLoaded', () => {
     const nav = document.getElementById('mainNav');
-
-    if (!menuBtn || !nav) {
-        console.warn('[Mobile Menu] mobileMenuBtn or mainNav not found');
-        return;
-    }
-
-    function openNav() {
-        nav.classList.add('active');
-        menuBtn.setAttribute('aria-expanded', 'true');
-    }
-
-    function closeNav() {
-        nav.classList.remove('active');
-        menuBtn.setAttribute('aria-expanded', 'false');
-    }
-
-    function toggleNav() {
-        if (nav.classList.contains('active')) closeNav();
-        else openNav();
-    }
-
-    // Expose globally so store-mobile.js bottom button can call same functions
-    window._navOpen   = openNav;
-    window._navClose  = closeNav;
-    window._navToggle = toggleNav;
-
-    // Top hamburger button
-    menuBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        toggleNav();
-    });
-
-    // Close when a nav link is clicked
-    nav.querySelectorAll('.nav-link').forEach(function(link) {
-        link.addEventListener('click', closeNav);
-    });
-
-    // Close when clicking outside the nav and the button
-    document.addEventListener('click', function(e) {
-        if (nav.classList.contains('active') &&
-            !nav.contains(e.target) &&
-            !menuBtn.contains(e.target)) {
-            closeNav();
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    
+    if (nav && mobileMenuBtn) {
+        // 1. Inject Backdrop if not already present
+        let backdrop = document.querySelector('.nav-backdrop');
+        if (!backdrop) {
+            backdrop = document.createElement('div');
+            backdrop.className = 'nav-backdrop';
+            document.body.appendChild(backdrop);
         }
-    });
 
-    // Close on Escape
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeNav();
-    });
+        // 2. Inject Close Button inside Drawer Header if not already present
+        if (!nav.querySelector('.nav-drawer-header')) {
+            const drawerHeader = document.createElement('div');
+            drawerHeader.className = 'nav-drawer-header';
+            drawerHeader.innerHTML = `
+                <span style="font-weight: 800; font-family: var(--font-serif); font-size: 1.25rem; color: var(--primary);">TECH CITY</span>
+                <button class="nav-drawer-close" id="navDrawerClose" aria-label="Close menu">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            `;
+            nav.insertBefore(drawerHeader, nav.firstChild);
+        }
 
-    console.log('[Mobile Menu] Initialised.');
+        const closeBtn = document.getElementById('navDrawerClose');
+
+        // Toggle Drawer Function
+        const openDrawer = () => {
+            nav.classList.add('active');
+            backdrop.classList.add('active');
+            document.body.classList.add('mobile-nav-open');
+        };
+
+        const closeDrawer = () => {
+            nav.classList.remove('active');
+            backdrop.classList.remove('active');
+            document.body.classList.remove('mobile-nav-open');
+        };
+
+        // Event Listeners
+        mobileMenuBtn.addEventListener('click', openDrawer);
+        closeBtn?.addEventListener('click', closeDrawer);
+        backdrop.addEventListener('click', closeDrawer);
+
+        // Auto-close drawer on navigation click (smooth UX)
+        nav.querySelectorAll('.nav-link:not(.mobile-nav-auth-logout)').forEach(link => {
+            link.addEventListener('click', closeDrawer);
+        });
+    }
 });
-
 
 // Cart drawer
 document.getElementById('cartBtn')?.addEventListener('click', openCart);
@@ -221,6 +218,9 @@ document.querySelectorAll('.nav-link').forEach(link => {
     }
 });
 
+// Legacy CSS injection removed to prevent styling conflicts with main.css mobile drawer rules.
+
+
 
 
 
@@ -283,16 +283,6 @@ const preload = (url, type) => {
 
 preload("../images/bck 336.jpg", "image"); // your background
 preload("/fonts/poppins.woff2", "font");
-
-// Storefront mobile app shell (tab bar) — skip dashboards
-(function loadStoreMobileShell() {
-    if (window.location.pathname.includes('/dashboards/')) return;
-    if (document.querySelector('script[src*="store-mobile"]')) return;
-    const script = document.createElement('script');
-    script.src = '/scripts/store-mobile.js?v=1';
-    script.defer = true;
-    document.body.appendChild(script);
-})();
 
 
 
