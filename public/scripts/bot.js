@@ -34,7 +34,7 @@ async function ensureProductsLoaded() {
     if (SESSION.products.length > 0) return SESSION.products;
 
     try {
-        const response = await fetch('/api/products');
+        const response = await fetch((window.TECHCITY_API_BASE || '') + '/api/products');
         const data = await response.json();
         SESSION.products = data;
         if (typeof window !== 'undefined') window.products = data;

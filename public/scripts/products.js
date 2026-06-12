@@ -159,7 +159,7 @@ function startCardImageRotation(renderedProducts) {
 
 async function fetchProducts() {
     try {
-        const res = await fetch(`/api/products?t=${Date.now()}`);
+        const res = await fetch(`${window.TECHCITY_API_BASE || ''}/api/products?t=${Date.now()}`);
         if (!res.ok) {
             const errorData = await res.json().catch(() => ({}));
             throw new Error(errorData.message || `Server responded with ${res.status}`);

@@ -264,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const token = localStorage.getItem('techcity_token');
-            const response = await fetch('/api/orders/my-orders', {
+            const response = await fetch((window.TECHCITY_API_BASE || '') + '/api/orders/my-orders', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!response.ok) throw new Error("Failed to fetch orders");
@@ -308,7 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const token = localStorage.getItem('techcity_token');
-            const response = await fetch('/api/orders/my-orders', {
+            const response = await fetch((window.TECHCITY_API_BASE || '') + '/api/orders/my-orders', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const orders = await response.json();
@@ -516,7 +516,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 const token = localStorage.getItem('techcity_token');
-                const res = await fetch(`/api/orders/${orderId}/cancel`, {
+                const res = await fetch(`${window.TECHCITY_API_BASE || ''}/api/orders/${orderId}/cancel`, {
                     method: 'PUT',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });

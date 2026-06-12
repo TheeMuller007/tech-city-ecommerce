@@ -2,38 +2,55 @@ const { Pool } = require('pg');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
-async function setup() {
-  const initialPool = new Pool({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT,
-    database: 'postgres'
-  });
+// Support Supabase via DATABASE_URL or local Postgres via individual vars
+const connectionString = process.env.DATABASE_URL;
 
-  try {
-    const res = await initialPool.query("SELECT 1 FROM pg_database WHERE datname='techcity_db'");
-    if (res.rows.length === 0) {
-      console.log('Creating database techcity_db...');
-      await initialPool.query('CREATE DATABASE techcity_db');
-      console.log('Database created.');
-    } else {
-      console.log('Database techcity_db already exists.');
+async function setup() {
+  let appPool;
+
+  if (connectionString) {
+    // ─── Supabase Mode ───────────────────────────
+    console.log('🌐 Using DATABASE_URL (Supabase mode) — skipping database creation.');
+    appPool = new Pool({
+      connectionString,
+      ssl: { rejectUnauthorized: false }
+    });
+  } else {
+    // ─── Local Mode ──────────────────────────────
+    console.log('🏠 Using local Postgres — checking database...');
+    const initialPool = new Pool({
+      user: process.env.DB_USER,
+      host: process.env.DB_HOST,
+      password: process.env.DB_PASSWORD,
+      port: process.env.DB_PORT,
+      database: 'postgres'
+    });
+
+    try {
+      const res = await initialPool.query("SELECT 1 FROM pg_database WHERE datname='techcity_db'");
+      if (res.rows.length === 0) {
+        console.log('Creating database techcity_db...');
+        await initialPool.query('CREATE DATABASE techcity_db');
+        console.log('Database created.');
+      } else {
+        console.log('Database techcity_db already exists.');
+      }
+    } catch (err) {
+      console.error('Error with db creation:', err);
+    } finally {
+      await initialPool.end();
     }
-  } catch (err) {
-    console.error('Error with db creation:', err);
-  } finally {
-    await initialPool.end();
+
+    appPool = new Pool({
+      user: process.env.DB_USER,
+      host: process.env.DB_HOST,
+      password: process.env.DB_PASSWORD,
+      port: process.env.DB_PORT,
+      database: process.env.DB_NAME
+    });
   }
 
-  const appPool = new Pool({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT,
-    database: process.env.DB_NAME
-  });
-
+  // ─── Create Tables (both modes) ──────────────
   try {
     console.log('Checking for users table...');
     await appPool.query(`
@@ -51,7 +68,7 @@ async function setup() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    console.log('Users table ready.');
+    console.log('✅ Users table ready.');
 
     console.log('Checking for products table...');
     await appPool.query(`
@@ -70,7 +87,7 @@ async function setup() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    console.log('Products table ready.');
+    console.log('✅ Products table ready.');
 
     console.log('Checking for orders table...');
     await appPool.query(`
@@ -85,7 +102,7 @@ async function setup() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    console.log('Orders table ready.');
+    console.log('✅ Orders table ready.');
 
     console.log('Checking for order_items table...');
     await appPool.query(`
@@ -97,11 +114,14 @@ async function setup() {
         price_at_purchase NUMERIC(10, 2) NOT NULL
       )
     `);
-    console.log('Order items table ready.');
+    console.log('✅ Order items table ready.');
+
+    console.log('\n🎉 All tables created successfully!');
   } catch(err) {
-    console.error('Error creating table:', err);
+    console.error('❌ Error creating table:', err);
   } finally {
     await appPool.end();
   }
 }
 setup();
+

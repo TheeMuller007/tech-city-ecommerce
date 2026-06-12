@@ -1,7 +1,7 @@
 // auth.js
 // Handles login and registration API requests
 
-const API_BASE_URL = '/api/auth';
+const API_BASE_URL = (window.TECHCITY_API_BASE || '') + '/api/auth';
 
 // =====================================
 // USER-SCOPED LOCALSTORAGE HELPERS
@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!token) return;
 
         try {
-            const res = await fetch('/api/user/profile', {
+            const res = await fetch((window.TECHCITY_API_BASE || '') + '/api/user/profile', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {
@@ -295,7 +295,7 @@ async function syncUserDataToServer(token) {
     const profile_pic = userData.profilePic || null;
 
     try {
-        await fetch('/api/user/sync', {
+        await fetch((window.TECHCITY_API_BASE || '') + '/api/user/sync', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -60,7 +60,13 @@
                 });
             } else if (tab.action === 'menu') {
                 btn.addEventListener('click', () => {
-                    document.getElementById('mainNav')?.classList.toggle('active');
+                    // Use shared toggle function from main.js if ready, else direct toggle
+                    if (typeof window._navToggle === 'function') {
+                        window._navToggle();
+                    } else {
+                        const mainNav = document.getElementById('mainNav');
+                        if (mainNav) mainNav.classList.toggle('active');
+                    }
                 });
             }
 
@@ -74,6 +80,8 @@
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', buildTabBar);
     } else {
-        buildTabBar();
+        // DOM already ready — small defer so main.js DOMContentLoaded runs first
+        // and window._navToggle is set before we attach the bottom button listener
+        setTimeout(buildTabBar, 0);
     }
 })();

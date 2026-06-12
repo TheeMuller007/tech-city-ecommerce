@@ -21,14 +21,33 @@ import { pool } from "./db.js";
 
 // =========================
 // Middleware
-// =========================
-app.use(cors());
+// Allow requests from Netlify and local development
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5000",
+  "http://127.0.0.1:5500",
+  "https://techcitystore.netlify.app",
+  process.env.RENDER_EXTERNAL_URL  // Auto-set by Render
+].filter(Boolean);
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
+}));
 app.use(express.json({ limit: "10mb" })); // Allow large profile pics (base64)
 
 // =========================
-// Serve all frontend static files
+// Serve frontend static files (local development only)
+// In production, Netlify serves the frontend
 // =========================
-app.use(express.static(path.join(__dirname, "public")));
+if (process.env.NODE_ENV !== "production") {
+  app.use(express.static(path.join(__dirname, "public")));
+}
 
 // =========================
 // JWT Auth Middleware
@@ -171,11 +190,17 @@ app.delete("/api/admin/users/:id", verifyToken, async (req, res) => {
 });
 
 // =========================
-// Catch-all → serve index.html
+// Catch-all: serve index.html locally, 404 JSON in production
 // =========================
-app.use((req, res) => {
-  res.sendFile(path.join(__dirname, "public/index.html"));
-});
+if (process.env.NODE_ENV !== "production") {
+  app.use((req, res) => {
+    res.sendFile(path.join(__dirname, "public/index.html"));
+  });
+} else {
+  app.use((req, res) => {
+    res.status(404).json({ message: "Not found" });
+  });
+}
 
 // =========================
 // Start server

@@ -3,7 +3,7 @@
    Real-time user data from backend API
    ============================================= */
 
-const API = '/api';
+const API = (window.TECHCITY_API_BASE || '') + '/api';
 let allUsers = [];
 let allProducts = [];
 let refreshInterval;

@@ -68,6 +68,8 @@ body {
 .header-actions {
     gap: 0.2rem;
     flex-shrink: 0;
+    position: relative;
+    z-index: 10000;
 }
 
 .header-actions .nav-button {
@@ -83,6 +85,10 @@ body {
 
 .mobile-menu-btn {
     display: flex;
+    position: relative;
+    z-index: 10000;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.15);
 }
 
 /* ─── Mobile nav drawer ───────────────────────────────────── */
@@ -97,7 +103,7 @@ body {
     top: 100%;
     left: 0;
     right: 0;
-    z-index: 9999;
+    z-index: 9998;
     background: #ffffff;
     border-bottom: 1px solid var(--border);
     padding: 0.75rem 1rem 1rem;

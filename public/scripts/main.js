@@ -1,50 +1,64 @@
 // Main JavaScript - Search & Cart Initializer
 console.log('[main.js] Script parsed and running v8');
 
-// Mobile menu toggle
-(function() {
+// Mobile menu toggle — wrapped in DOMContentLoaded to guarantee elements exist
+document.addEventListener('DOMContentLoaded', function() {
     const menuBtn = document.getElementById('mobileMenuBtn');
     const nav = document.getElementById('mainNav');
-    
-    if (menuBtn && nav) {
-        // Toggle menu on hamburger click
-        menuBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            nav.classList.toggle('active');
-            menuBtn.classList.toggle('menu-open');
-            console.log('[Mobile Menu] Toggled:', nav.classList.contains('active'));
-        });
 
-        // Close menu when a nav link is clicked
-        nav.querySelectorAll('.nav-link').forEach(function(link) {
-            link.addEventListener('click', function() {
-                nav.classList.remove('active');
-                menuBtn.classList.remove('menu-open');
-            });
-        });
-
-        // Close menu when clicking outside
-        document.addEventListener('click', function(e) {
-            if (nav.classList.contains('active') && 
-                !nav.contains(e.target) && 
-                !menuBtn.contains(e.target)) {
-                nav.classList.remove('active');
-                menuBtn.classList.remove('menu-open');
-            }
-        });
-
-        // Close menu on Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && nav.classList.contains('active')) {
-                nav.classList.remove('active');
-                menuBtn.classList.remove('menu-open');
-            }
-        });
-    } else {
+    if (!menuBtn || !nav) {
         console.warn('[Mobile Menu] mobileMenuBtn or mainNav not found');
+        return;
     }
-})();
+
+    function openNav() {
+        nav.classList.add('active');
+        menuBtn.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeNav() {
+        nav.classList.remove('active');
+        menuBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    function toggleNav() {
+        if (nav.classList.contains('active')) closeNav();
+        else openNav();
+    }
+
+    // Expose globally so store-mobile.js bottom button can call same functions
+    window._navOpen   = openNav;
+    window._navClose  = closeNav;
+    window._navToggle = toggleNav;
+
+    // Top hamburger button
+    menuBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleNav();
+    });
+
+    // Close when a nav link is clicked
+    nav.querySelectorAll('.nav-link').forEach(function(link) {
+        link.addEventListener('click', closeNav);
+    });
+
+    // Close when clicking outside the nav and the button
+    document.addEventListener('click', function(e) {
+        if (nav.classList.contains('active') &&
+            !nav.contains(e.target) &&
+            !menuBtn.contains(e.target)) {
+            closeNav();
+        }
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeNav();
+    });
+
+    console.log('[Mobile Menu] Initialised.');
+});
 
 
 // Cart drawer

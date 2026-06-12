@@ -37,7 +37,7 @@ form.addEventListener("submit", async (e) => {
 
     try {
         // Send data to backend
-        const res = await fetch("http://localhost:5000/register", {
+        const res = await fetch((window.TECHCITY_API_BASE || '') + "/api/auth/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ full_name, username, email, password })

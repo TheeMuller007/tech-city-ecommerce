@@ -80,7 +80,7 @@ async function handleSubmit(e) {
     const total = subtotal + shippingFee + tax;
 
     try {
-        const res = await fetch('/api/orders', {
+        const res = await fetch((window.TECHCITY_API_BASE || '') + '/api/orders', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

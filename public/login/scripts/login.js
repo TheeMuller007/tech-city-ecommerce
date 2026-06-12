@@ -24,7 +24,7 @@ loginForm.addEventListener("submit", async (e) => {
 
   try {
     // Send login data to backend admin login route
-    const res = await fetch("http://localhost:5000/api/admin/login", {
+    const res = await fetch((window.TECHCITY_API_BASE || '') + "/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password })
