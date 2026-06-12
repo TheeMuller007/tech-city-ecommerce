@@ -12,6 +12,6 @@
   // In production (Netlify), point to the Render backend.
   // In local dev, use same-origin (empty string).
   window.TECHCITY_API_BASE = isProduction
-    ? "https://techcity-backend.onrender.com" // ← UPDATE with your real Render URL
+    ? "https://techcity-backend.onrender.com"
     : "";
 })();
